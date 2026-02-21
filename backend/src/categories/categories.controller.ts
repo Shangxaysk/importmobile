@@ -7,39 +7,32 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer'; // RAMga saqlash
+import { UploadService } from '../upload/upload.service'; // Cloudinary servisi
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    private readonly uploadService: UploadService // Servisni ulaymiz
+  ) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt'), RolesGuard) // 1. AuthGuard qo'shildi
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
-  @UseInterceptors(FileInterceptor('image', { // 2. Rasm qabul qilish
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, `cat-${uniqueSuffix}${extname(file.originalname)}`);
-      },
-    }),
-  }))
-  create(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
-    // Frontenddan "true"/"false" string keladi, uni booleanga o'giramiz
-    const hasSpecs = body.hasSpecs === 'true';
+  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
+  async create(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
+    let imagePath = null;
     
-    // ParentId bo'sh string kelsa null qilamiz, yo'qsa raqam
-    const parentId = body.parentId ? Number(body.parentId) : null;
+    if (file) {
+      const uploadResult = await this.uploadService.uploadFile(file);
+      imagePath = uploadResult.secure_url; // Cloudinary HTTPS linki
+    }
 
-    const imagePath = file ? `/uploads/${file.filename}` : null;
+    const hasSpecs = String(body.hasSpecs) === 'true';
+    const parentId = body.parentId && body.parentId !== 'null' ? Number(body.parentId) : null;
 
-    return this.categoriesService.create({
-      ...body,
-      hasSpecs,
-      parentId,
-    }, imagePath);
+    return this.categoriesService.create({ ...body, hasSpecs, parentId }, imagePath);
   }
 
   @Get()
@@ -55,26 +48,19 @@ export class CategoriesController {
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
-  @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, `cat-${uniqueSuffix}${extname(file.originalname)}`);
-      },
-    }),
-  }))
-  update(@Param('id') id: string, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
-    const hasSpecs = body.hasSpecs === 'true';
-    const parentId = body.parentId ? Number(body.parentId) : null;
-    
-    const imagePath = file ? `/uploads/${file.filename}` : undefined;
+  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
+  async update(@Param('id') id: string, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
+    let imagePath = undefined;
 
-    return this.categoriesService.update(+id, {
-      ...body,
-      hasSpecs,
-      parentId
-    }, imagePath);
+    if (file) {
+      const uploadResult = await this.uploadService.uploadFile(file);
+      imagePath = uploadResult.secure_url;
+    }
+
+    const hasSpecs = String(body.hasSpecs) === 'true';
+    const parentId = body.parentId && body.parentId !== 'null' ? Number(body.parentId) : null;
+
+    return this.categoriesService.update(+id, { ...body, hasSpecs, parentId }, imagePath);
   }
 
   @Delete(':id')

@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
 import * as streamifier from 'streamifier';
 
 @Injectable()
 export class UploadService {
   constructor() {
-    // Cloudinary sozlamalari (Bularni .env dan olamiz)
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
@@ -13,16 +12,17 @@ export class UploadService {
     });
   }
 
-  uploadFile(file: Express.Multer.File): Promise<any> {
+  // Promise qaytaradigan tipni aniqlashtirdik
+  uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'importmobile' }, // Cloudinary ichida 'importmobile' degan papkaga tushadi
+        { folder: 'importmobile' },
         (error, result) => {
           if (error) return reject(error);
-          resolve(result);
+          if (!result) return reject(new Error('Cloudinary result is undefined'));
+          resolve(result); // Endi qizil bo'lmaydi
         },
       );
-      // Faylni xotiradan (buffer) oqimga (stream) o'tkazib jo'natamiz
       streamifier.createReadStream(file.buffer).pipe(uploadStream);
     });
   }

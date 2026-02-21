@@ -36,25 +36,29 @@ export default function AdminCategories() {
     parentId: ''
   });
 
-  // Rasm URL manzilini to'g'ri shakllantirish funksiyasi
+  // Rasm URL manzilini to'g'ri shakllantirish funksiyasi (Render uchun to'g'irlandi)
   const getImageUrl = (imagePath: string) => {
     if (!imagePath) return '';
     if (imagePath.startsWith('blob:') || imagePath.startsWith('http')) {
       return imagePath;
     }
-    return import.meta.env.VITE_API_URL + imagePath;
+    const apiUrl = import.meta.env.VITE_API_URL;
+    // URL oxiridagi va path boshidagi slashlarni tozalab birlashtiramiz
+    const baseUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    return `${baseUrl}${cleanPath}`;
   };
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get(import.meta.env.VITE_API_URL + '/categories');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/categories`);
       setCategories(res.data);
     } catch (err) { console.error(err); }
   };
 
   useEffect(() => { fetchCategories(); }, []);
 
-  const handleImageUpload = async (e: any) => {
+  const handleImageUpload = (e: any) => {
     const file = e.target.files[0];
     if (!file) return;
     const previewUrl = URL.createObjectURL(file);
@@ -68,15 +72,20 @@ export default function AdminCategories() {
     setLoading(true);
     const formData = new FormData();
     formData.append('nameUz', form.nameUz);
-    formData.append('nameRu', form.nameRu);
+    formData.append('nameRu', form.nameRu || form.nameUz);
     formData.append('icon', form.icon);
+    
+    // hasSpecs'ni string qilib yuboramiz, lekin qat'iy 'true' yoki 'false'
     formData.append('hasSpecs', String(form.hasSpecs));
+    
     if (form.parentId) formData.append('parentId', form.parentId);
-    if ((form as any).imageFile) formData.append('image', (form as any).imageFile);
+    if ((form as any).imageFile) {
+      formData.append('image', (form as any).imageFile);
+    }
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post(import.meta.env.VITE_API_URL + '/categories', formData, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/categories`, formData, {
         headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -103,7 +112,7 @@ export default function AdminCategories() {
 
   const IconRenderer = ({ name, className }: { name: string, className?: string }) => {
     const IconComponent = (LucideIcons as any)[name];
-    return IconComponent ? <IconComponent className={className} /> : null;
+    return IconComponent ? <IconComponent className={className} /> : <FolderPlus className={className} />;
   };
 
   const parentCategories = categories.filter(c => !c.parentId);
