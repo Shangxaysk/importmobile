@@ -23,18 +23,32 @@ export default function SubCatalog() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
 
+  // Rasm URL manzilini to'g'rilash uchun yordamchi funksiya
+  const getImageUrl = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    // Agar /uploads bilan boshlansa, Render URL'ini qo'shadi
+    return import.meta.env.VITE_API_URL + path;
+  };
+
   useEffect(() => {
     setLoading(true);
-   axios.get(`${import.meta.env.VITE_API_URL}/categories/${parentId}`)
-  .then(res => setParentCategory(res.data))
-  .catch(err => console.error(err))
-  .finally(() => setLoading(false));
-}, [parentId]);
+    axios.get(`${import.meta.env.VITE_API_URL}/categories/${parentId}`)
+      .then(res => setParentCategory(res.data))
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
+  }, [parentId]);
 
   const renderIcon = (cat: any) => {
     if (cat.image) {
-        // Alt tekstini ham tilga mosladik
-        return <img src={cat.image} className="w-full h-full object-contain brightness-0 invert" alt={language === 'ru' ? (cat.nameRu || cat.nameUz) : cat.nameUz} />;
+        // BU YERDA O'ZGARISH: getImageUrl funksiyasini qo'shdik
+        return (
+          <img 
+            src={getImageUrl(cat.image)} 
+            className="w-full h-full object-contain brightness-0 invert" 
+            alt={language === 'ru' ? (cat.nameRu || cat.nameUz) : cat.nameUz} 
+          />
+        );
     }
     const IconComponent = (LucideIcons as any)[cat.icon] || LucideIcons.Folder;
     return <IconComponent size={24} strokeWidth={2} />;
@@ -74,7 +88,6 @@ export default function SubCatalog() {
             </button>
 
             <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-black text-gray-900 dark:text-white truncate max-w-[200px] text-center">
-                {/* Sarlavhani tilga qarab chiqarish */}
                 {language === 'ru' ? (parentCategory.nameRu || parentCategory.nameUz) : parentCategory.nameUz}
             </h1>
         </div>
@@ -102,7 +115,6 @@ export default function SubCatalog() {
 
                             <div className="flex-1 ml-4">
                                 <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-blue-600 transition-colors">
-                                    {/* Ro'yxat elementlarini tilga qarab chiqarish */}
                                     {language === 'ru' ? (child.nameRu || child.nameUz) : child.nameUz}
                                 </h3>
                             </div>
