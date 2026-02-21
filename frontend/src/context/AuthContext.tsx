@@ -58,6 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const tg = window.Telegram?.WebApp;
     const telegramId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
 
+    // EKRANGA CHIQARIB TEKSHIRAMIZ (To'g'rilangandan keyin o'chirib tashlaysiz)
+    alert("Ushlangan Telegram ID: " + telegramId);
+
     // 2. BACKENDGA telegramId NI QO'SHIB JO'NATAMIZ
     const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/register', { 
         fullName, 
