@@ -34,7 +34,7 @@ create(
   @UploadedFiles() files: Express.Multer.File[], 
   @Body() body: any // ValidationPipe whitelist: true bo'lsa DTO dan foydalaning
 ) {
-  const imageUrls = files?.map(file => `http://localhost:3000/uploads/${file.filename}`) || [];
+  const imageUrls = files?.map(file => `/uploads/${file.filename}`) || [];
   
   // MUHIM TUZATISH: body.specs emas, body.specifications
   let specs = body.specifications; 
@@ -80,7 +80,7 @@ async update(
   @UploadedFiles() files: Express.Multer.File[], 
   @Body() body: any
 ) {
-  const newImageUrls = files?.map(file => `http://localhost:3000/uploads/${file.filename}`) || [];
+  const newImageUrls = files?.map(file => `/uploads/${file.filename}`) || [];
   
   // MUHIM TUZATISH: body.specs emas, body.specifications
   let specs = body.specifications;

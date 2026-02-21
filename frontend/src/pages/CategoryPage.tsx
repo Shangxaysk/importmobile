@@ -23,10 +23,17 @@ export default function CategoryPage() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`http://localhost:3000/categories/${categoryId}`)
-      .then(res => setCategory(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    const fetchCategory = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/categories/${categoryId}`);
+        setCategory(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategory();
   }, [categoryId]);
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {

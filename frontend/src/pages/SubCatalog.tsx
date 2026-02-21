@@ -25,11 +25,11 @@ export default function SubCatalog() {
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`http://localhost:3000/categories/${parentId}`)
-      .then(res => setParentCategory(res.data))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
-  }, [parentId]);
+   axios.get(`${import.meta.env.VITE_API_URL}/categories/${parentId}`)
+  .then(res => setParentCategory(res.data))
+  .catch(err => console.error(err))
+  .finally(() => setLoading(false));
+}, [parentId]);
 
   const renderIcon = (cat: any) => {
     if (cat.image) {

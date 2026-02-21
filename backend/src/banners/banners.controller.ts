@@ -46,7 +46,7 @@ export class BannersController {
   create(@UploadedFile() file: Express.Multer.File, @Body() dto: CreateBannerDto) {
     if (!file) throw new BadRequestException('Rasm yuklanmadi!');
     
-    const imagePath = `http://localhost:3000/uploads/${file.filename}`;
+    const imagePath = `/uploads/${file.filename}`;
     
     return this.bannersService.create({
       ...dto,

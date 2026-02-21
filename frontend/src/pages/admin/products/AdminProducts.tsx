@@ -34,9 +34,9 @@ export default function AdminProducts() {
     if (window.confirm(t('delete_confirm'))) {
       try {
         const token = localStorage.getItem('token');
-        await axios.delete(`http://localhost:3000/products/${id}`, {
-            headers: { Authorization: `Bearer ${token}` }
-        });
+        await axios.delete(`${import.meta.env.VITE_API_URL}/products/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+});
         setProducts(products.filter(p => p.id !== id));
       } catch (err) {
         alert(t('delete_error'));

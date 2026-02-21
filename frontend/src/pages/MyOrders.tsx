@@ -43,9 +43,9 @@ export default function MyOrders() {
     try {
       const token = localStorage.getItem('token');
       const encodedId = encodeURIComponent(orderId);
-      await axios.patch(`http://localhost:3000/orders/${encodedId}/read`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+     await axios.patch(`${import.meta.env.VITE_API_URL}/orders/${encodedId}/read`, {}, {
+    headers: { Authorization: `Bearer ${token}` }
+});
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, isMessageRead: true } : o));
     } catch (e) {}
   };

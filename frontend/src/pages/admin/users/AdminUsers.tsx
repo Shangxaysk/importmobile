@@ -33,7 +33,7 @@ export default function AdminUsers() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:3000/users/${id}/toggle-block`, {}, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/users/${id}/toggle-block`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();

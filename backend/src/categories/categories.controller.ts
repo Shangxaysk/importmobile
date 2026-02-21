@@ -33,7 +33,7 @@ export class CategoriesController {
     // ParentId bo'sh string kelsa null qilamiz, yo'qsa raqam
     const parentId = body.parentId ? Number(body.parentId) : null;
 
-    const imagePath = file ? `http://localhost:3000/uploads/${file.filename}` : null;
+    const imagePath = file ? `/uploads/${file.filename}` : null;
 
     return this.categoriesService.create({
       ...body,
@@ -68,7 +68,7 @@ export class CategoriesController {
     const hasSpecs = body.hasSpecs === 'true';
     const parentId = body.parentId ? Number(body.parentId) : null;
     
-    const imagePath = file ? `http://localhost:3000/uploads/${file.filename}` : undefined;
+    const imagePath = file ? `/uploads/${file.filename}` : undefined;
 
     return this.categoriesService.update(+id, {
       ...body,

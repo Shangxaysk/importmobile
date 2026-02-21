@@ -79,7 +79,7 @@ export default function EditProduct() {
       try {
         const [catRes, prodRes] = await Promise.all([
           axios.get(import.meta.env.VITE_API_URL + '/categories'),
-          axios.get(`http://localhost:3000/products/${id}`)
+          axios.get(`${import.meta.env.VITE_API_URL}/products/${id}`)
         ]);
         
         setCategories(catRes.data);
@@ -252,7 +252,7 @@ export default function EditProduct() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:3000/products/${id}`, formData, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/products/${id}`, formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}` 

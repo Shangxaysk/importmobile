@@ -63,14 +63,16 @@ export default function ProductDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    axios.get(`http://localhost:3000/products/${id}`)
-      .then((res) => {
-        const data = res.data;
-        setProduct(data);
-        
-        if (data.images && data.images.length > 0) {
-            setMainImage(data.images[0]);
-        }
+   axios.get(`${import.meta.env.VITE_API_URL}/products/${id}`)
+  .then((res) => {
+    const data = res.data;
+    setProduct(data);
+    
+    if (data.images && data.images.length > 0) {
+      // Rasmni ko'rsatishda ham ehtiyot bo'ling: 
+      // Agar bazada rasm yo'li to'liq bo'lmasa, API URL ni qo'shish kerak bo'ladi
+      setMainImage(data.images[0]);
+    }
 
         if (data.specifications) {
             try {

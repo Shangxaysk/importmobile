@@ -48,7 +48,7 @@ export class BotService {
       return new Promise((resolve, reject) => {
         const writer = fs.createWriteStream(filePath);
         response.data.pipe(writer);
-        writer.on('finish', () => resolve(`http://localhost:3000/uploads/${fileName}`));
+ writer.on('finish', () => resolve(`/uploads/${fileName}`));
         writer.on('error', reject);
       });
     } catch (e) {

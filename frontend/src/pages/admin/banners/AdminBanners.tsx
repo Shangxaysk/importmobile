@@ -93,15 +93,23 @@ export default function AdminBanners() {
   const handleDelete = async (id: number) => {
     if (!window.confirm(t('delete_confirm_short'))) return;
     const token = localStorage.getItem('token');
-    await axios.delete(`http://localhost:3000/banners/${id}`, { headers: { Authorization: `Bearer ${token}` }});
+    
+    // http://localhost:3000 o'rniga dinamik manzil qo'shildi
+    await axios.delete(`${import.meta.env.VITE_API_URL}/banners/${id}`, { 
+        headers: { Authorization: `Bearer ${token}` }
+    });
     fetchData();
-  };
+};
 
-  const toggleStatus = async (id: number) => {
+const toggleStatus = async (id: number) => {
     const token = localStorage.getItem('token');
-    await axios.patch(`http://localhost:3000/banners/${id}/toggle`, {}, { headers: { Authorization: `Bearer ${token}` }});
+    
+    // http://localhost:3000 o'rniga dinamik manzil qo'shildi
+    await axios.patch(`${import.meta.env.VITE_API_URL}/banners/${id}/toggle`, {}, { 
+        headers: { Authorization: `Bearer ${token}` }
+    });
     fetchData();
-  };
+};
 
   const resetForm = () => {
     setFile(null); setPreview(null); setTitle(""); setLinkValue(""); setBadgeText(""); 

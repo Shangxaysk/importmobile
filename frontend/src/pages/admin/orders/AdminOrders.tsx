@@ -48,10 +48,10 @@ export default function AdminOrders() {
       const token = localStorage.getItem('token');
       const encodedId = encodeURIComponent(id);
       
-      await axios.patch(`http://localhost:3000/orders/${encodedId}/status`, 
-        { action, reason }, 
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await axios.patch(`${import.meta.env.VITE_API_URL}/orders/${encodedId}/status`, 
+    { action, reason }, 
+    { headers: { Authorization: `Bearer ${token}` } }
+);
       
       setShowRejectModal(false);
       setPreviewOrder(null);
@@ -70,7 +70,7 @@ export default function AdminOrders() {
       const token = localStorage.getItem('token');
       const encodedId = encodeURIComponent(orderId);
       
-      await axios.post(`http://localhost:3000/orders/${encodedId}/message`, 
+      await axios.post(`${import.meta.env.VITE_API_URL}/orders/${encodedId}/message`, 
         { message: `#IMPRT ${updateMsg}` }, 
         { headers: { Authorization: `Bearer ${token}` } }
       );

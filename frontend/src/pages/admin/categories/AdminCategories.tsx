@@ -87,9 +87,9 @@ export default function AdminCategories() {
     if (!window.confirm(t('delete_confirm_short'))) return;
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:3000/categories/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+     await axios.delete(`${import.meta.env.VITE_API_URL}/categories/${id}`, {
+  headers: { Authorization: `Bearer ${token}` }
+});
       fetchCategories();
     } catch (err) { alert(t('error')); }
   };

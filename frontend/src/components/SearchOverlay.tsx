@@ -34,7 +34,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
       if (query.trim().length > 0) {
         setLoading(true);
         try {
-          const res = await axios.get(`http://localhost:3000/products`);
+const res = await axios.get(`${import.meta.env.VITE_API_URL}/products`);
           
           const filteredProducts = res.data.filter((product: any) => 
             product.name.toLowerCase().includes(query.toLowerCase())
