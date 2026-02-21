@@ -1,0 +1,9 @@
+version: "2"
+authtoken: 38ZweQnYTVQ8XBkv14KaEeMPHIh_7gfT5rSojCLvNMv2jo79z # (Agar token kompyuterda saqlangan bo'lsa, bu qator shart emas)
+tunnels:
+  backend-server:
+    addr: 3000
+    proto: http
+  frontend-client:
+    addr: 5173
+    proto: http

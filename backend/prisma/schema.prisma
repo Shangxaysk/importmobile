@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------
+// 1. FOYDALANUVCHILAR
+// ------------------------------------------
+model User {
+  id          Int      @id @default(autoincrement())
+  fullName    String?
+  phoneNumber String   @unique
+  password    String
+  role        String   @default("USER")
+  isBlocked   Boolean  @default(false)
+  telegramId  String?
+
+  orders           Order[]
+  favoriteProducts Product[] @relation("UserFavorites")
+
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// ------------------------------------------
+// 2. KATALOG VA MAHSULOTLAR
+// ------------------------------------------
+model Category {
+  id       Int      @id @default(autoincrement())
+  nameUz   String
+  nameRu   String?
+  image    String?
+  icon      String?   // Ikonka nomi (masalan: "Smartphone", "Laptop")
+  hasSpecs Boolean  @default(false)
+  
+  // Ierarxiya: Katalog ichida katalog bo'lishi uchun
+  parentId Int?
+  parent   Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children Category[] @relation("SubCategories")
+
+  products Product[]
+}
+
+model Product {
+  id                Int      @id @default(autoincrement())
+  name              String
+  description       String
+  price             Decimal  @db.Decimal(15, 2)
+  originalPrice     Decimal? @db.Decimal(15, 2)
+  images            String[]
+  isAvailable       Boolean  @default(true)
+  deliveryTime      String?
+  prepaymentPercent Int      @default(0)
+  specifications    Json?
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  favoritedBy User[]      @relation("UserFavorites")
+}
+
+// ------------------------------------------
+// 3. BANNERLAR (SLAYDER) - TAKOMILLASHGAN
+// ------------------------------------------
+enum BannerLinkType {
+  PRODUCT
+  CATEGORY
+  EXTERNAL
+}
+
+model Banner {
+  id          Int            @id @default(autoincrement())
+  image       String
+  title       String?
+  linkType    BannerLinkType @default(PRODUCT)
+  linkValue   String
+  
+  // Badge sozlamalari takomillashtirildi
+  badgeText   String?
+  badgeColor  String?        @default("#ef4444") // Badge fon rangi (Hex)
+  badgeTextColor String?     @default("#ffffff") // Badge matn rangi (Hex)
+  badgePosition String?      @default("top-right") // top-left, top-right, center, etc.
+  
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+}
+
+// ------------------------------------------
+// 4. BUYURTMALAR
+// ------------------------------------------
+model Order {
+  id             String  @id // #IMPRT00001
+  userId         Int
+  user           User    @relation(fields: [userId], references: [id])
+  address        String
+  contactPhone   String
+  extraPhone     String?
+  telegramUser   String?
+  comment        String?
+  totalPrice     Decimal @db.Decimal(15, 2)
+  paymentReceipt String? 
+  deliveryDays Int      @default(15) // Necha kunda yetkazilishi
+  adminMessage String?  // Admindan mijozga xabar (Masalan: #IMPRT Bojxona)
+  isMessageRead Boolean @default(true) // Mijoz xabarni o'qidimi?
+
+  status       String  @default("NEW")
+  rejectReason String? 
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal @db.Decimal(15, 2)
+  config    String?
+}
+
+// ------------------------------------------
+// 5. BOSHQA SOZLAMALAR
+// ------------------------------------------
+model BotSettings {
+  id             Int     @id @default(autoincrement())
+  adminId        Int     @unique
+  targetChatId   String?
+  targetChatName String?
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  mediaUrl  String?
+  views     Int      @default(0)
+  likes     Int      @default(0)
+  dislikes  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model ContactSettings {
+  id        Int      @id @default(1) // Har doim 1-ID da turadi
+  phone     String   @default("+998 90 123 45 67")
+  telegram  String   @default("@admin_user")
+  email     String   @default("info@example.com")
+  address   String   @default("Toshkent sh.")
+  updatedAt DateTime @updatedAt
+}
+
+model SystemSettings {
+  id        Int      @id @default(1)
+  phone     String   @default("+998 90 123 45 67")
+  telegram  String   @default("@importmobile_admin")
+  email     String   @default("info@importmobile.uz")
+  address   String   @default("Toshkent sh.")
+  updatedAt DateTime @updatedAt
+  cardNumber String? @default("") // Yangi
+  cardHolder String? @default("") // Yangi
+}
+
+model GlobalSettings {
+  id          Int     @id @default(1)
+  cardNumber  String  @default("")
+  cardHolder  String  @default("")
+  dollarRate  Float   @default(1.0) // Kelajak uchun
+}
