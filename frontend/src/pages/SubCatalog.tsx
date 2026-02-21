@@ -23,12 +23,18 @@ export default function SubCatalog() {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
 
-  // Rasm URL manzilini to'g'rilash uchun yordamchi funksiya
+  // Rasm URL manzilini Render backend manzili bilan birlashtirish
   const getImageUrl = (path: string) => {
     if (!path) return '';
+    // Agar rasm allaqachon to'liq URL bo'lsa (http bilan boshlansa), o'zini qaytaramiz
     if (path.startsWith('http')) return path;
-    // Agar /uploads bilan boshlansa, Render URL'ini qo'shadi
-    return import.meta.env.VITE_API_URL + path;
+    // Bazadan kelgan /uploads/... yo'lini Render API manzili bilan birlashtiramiz
+    const apiUrl = import.meta.env.VITE_API_URL;
+    // URL oxirida / bo'lsa olib tashlaymiz, path boshida / bo'lsa qo'shamiz
+    const baseUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    
+    return `${baseUrl}${cleanPath}`;
   };
 
   useEffect(() => {
@@ -41,12 +47,16 @@ export default function SubCatalog() {
 
   const renderIcon = (cat: any) => {
     if (cat.image) {
-        // BU YERDA O'ZGARISH: getImageUrl funksiyasini qo'shdik
         return (
           <img 
             src={getImageUrl(cat.image)} 
-            className="w-full h-full object-contain brightness-0 invert" 
+            className="w-full h-full object-contain brightness-0 invert p-1" 
             alt={language === 'ru' ? (cat.nameRu || cat.nameUz) : cat.nameUz} 
+            onError={(e: any) => {
+              // Agar rasm yuklanmasa, zaxira ikonkani ko'rsatamiz
+              e.target.style.display = 'none';
+              e.target.nextSibling.style.display = 'block';
+            }}
           />
         );
     }
@@ -60,7 +70,7 @@ export default function SubCatalog() {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-full bg-white dark:bg-black text-blue-600">
+    <div className="flex justify-center items-center h-full min-h-[400px] bg-white dark:bg-black text-emerald-600">
         <Loader2 className="animate-spin" size={40} />
     </div>
   );
@@ -87,7 +97,7 @@ export default function SubCatalog() {
                 <span className="text-xs tracking-wide font-medium">{t('back')}</span>
             </button>
 
-            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-black text-gray-900 dark:text-white truncate max-w-[200px] text-center">
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-black text-gray-900 dark:text-white truncate max-w-[180px] text-center leading-tight">
                 {language === 'ru' ? (parentCategory.nameRu || parentCategory.nameUz) : parentCategory.nameUz}
             </h1>
         </div>
@@ -95,9 +105,9 @@ export default function SubCatalog() {
       
 
       {/* --- CONTENT --- */}
-      <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 pb-24">
         {parentCategory.children && parentCategory.children.length > 0 ? (
-            <div className="bg-white dark:bg-black rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-900">
+            <div className="bg-white dark:bg-black rounded-[32px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-900">
                 {parentCategory.children.map((child: any, index: number) => {
                     const bgColor = getCategoryColor(child.id);
 
@@ -105,21 +115,27 @@ export default function SubCatalog() {
                         <Link 
                             to={`/catalog/products/${child.id}`} 
                             key={child.id} 
-                            className={`group flex items-center p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-all duration-200 cursor-pointer ${
+                            className={`group flex items-center p-5 hover:bg-gray-50 dark:hover:bg-gray-900/40 transition-all duration-200 cursor-pointer ${
                                 index !== parentCategory.children.length - 1 ? 'border-b border-gray-100 dark:border-gray-900' : ''
                             }`}
                         >
-                            <div className={`w-12 h-12 flex-shrink-0 ${bgColor} rounded-2xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                            <div className={`w-14 h-14 flex-shrink-0 ${bgColor} rounded-[18px] flex items-center justify-center text-white shadow-lg shadow-black/5 group-hover:scale-105 transition-transform duration-300 overflow-hidden`}>
                                 {renderIcon(child)}
+                                <Folder className="hidden" size={24} /> {/* Zaxira ikonka uchun */}
                             </div>
 
                             <div className="flex-1 ml-4">
-                                <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-blue-600 transition-colors">
+                                <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-emerald-600 transition-colors">
                                     {language === 'ru' ? (child.nameRu || child.nameUz) : child.nameUz}
                                 </h3>
+                                {child.products && (
+                                  <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1 block">
+                                    {child.products.length} {t('products_count_label') || 'tovarlar'}
+                                  </span>
+                                )}
                             </div>
 
-                            <div className="text-gray-300 dark:text-gray-700 group-hover:text-blue-500 group-hover:translate-x-1 transition-all">
+                            <div className="text-gray-300 dark:text-gray-700 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all">
                                 <ChevronRight size={20} strokeWidth={2.5} />
                             </div>
                         </Link>
@@ -128,13 +144,13 @@ export default function SubCatalog() {
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-4">
-                    <Folder size={32} className="text-gray-400 dark:text-gray-600" />
+                <div className="w-20 h-20 bg-gray-50 dark:bg-gray-900 rounded-full flex items-center justify-center mb-6">
+                    <Folder size={36} className="text-gray-300 dark:text-gray-700" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
                   {t('subcategories_empty')}
                 </h3>
-                <p className="text-gray-500 text-sm mt-1">
+                <p className="text-gray-400 text-sm mt-2 max-w-[250px] font-medium">
                   {t('subcategories_empty_desc')}
                 </p>
             </div>

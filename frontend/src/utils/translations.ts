@@ -101,6 +101,7 @@ export const translations = {
     subcategories_empty: "Bo'limlar mavjud emas",
     subcategories_empty_desc: "Ushbu katalog ichi hozircha bo'sh.",
     categories_not_found: "Bo'limlar topilmadi",
+    products_count_label: "tovar",
 
     // === PRODUCT DETAIL ===
     memory: "Xotira",
@@ -492,6 +493,7 @@ export const translations = {
     subcategories_empty: "Разделы отсутствуют",
     subcategories_empty_desc: "Этот каталог пока пуст.",
     categories_not_found: "Категории не найдены",
+    products_count_label: "товаров",
 
     // === PRODUCT DETAIL ===
     memory: "Память",
