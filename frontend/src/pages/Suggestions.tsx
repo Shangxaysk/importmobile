@@ -37,7 +37,7 @@ export default function Suggestions() {
     }
 
     try {
-      await axios.post('http://localhost:3000/contact/suggestion', formData, {
+      await axios.post(import.meta.env.VITE_API_URL + '/contact/suggestion', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data' 
         }

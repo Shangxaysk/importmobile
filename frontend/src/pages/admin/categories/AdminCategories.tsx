@@ -40,7 +40,7 @@ export default function AdminCategories() {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/categories');
+      const res = await axios.get(import.meta.env.VITE_API_URL + '/categories');
       setCategories(res.data);
     } catch (err) { console.error(err); }
   };
@@ -69,7 +69,7 @@ export default function AdminCategories() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/categories', formData, {
+      await axios.post(import.meta.env.VITE_API_URL + '/categories', formData, {
         headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'

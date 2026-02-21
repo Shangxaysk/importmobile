@@ -43,9 +43,9 @@ export default function AdminBanners() {
   const fetchData = async () => {
     try {
       const [bRes, pRes, cRes] = await Promise.all([
-        axios.get('http://localhost:3000/banners'),
-        axios.get('http://localhost:3000/products'),
-        axios.get('http://localhost:3000/categories')
+        axios.get(import.meta.env.VITE_API_URL + '/banners'),
+        axios.get(import.meta.env.VITE_API_URL + '/products'),
+        axios.get(import.meta.env.VITE_API_URL + '/categories')
       ]);
       setBanners(bRes.data);
       setProducts(pRes.data);
@@ -74,7 +74,7 @@ export default function AdminBanners() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/banners', formData, {
+      await axios.post(import.meta.env.VITE_API_URL + '/banners', formData, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'

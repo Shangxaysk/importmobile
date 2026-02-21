@@ -78,7 +78,7 @@ export default function EditProduct() {
     const fetchData = async () => {
       try {
         const [catRes, prodRes] = await Promise.all([
-          axios.get('http://localhost:3000/categories'),
+          axios.get(import.meta.env.VITE_API_URL + '/categories'),
           axios.get(`http://localhost:3000/products/${id}`)
         ]);
         

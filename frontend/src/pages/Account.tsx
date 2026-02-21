@@ -36,7 +36,7 @@ export default function Account() {
   useEffect(() => {
     if (user) {
       const token = localStorage.getItem('token');
-      axios.get('http://localhost:3000/orders/my', {
+      axios.get(import.meta.env.VITE_API_URL + '/orders/my', {
         headers: { Authorization: `Bearer ${token}` }
       })
       .then(res => {

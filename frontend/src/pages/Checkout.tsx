@@ -65,8 +65,8 @@ export default function Checkout() {
     const fetchData = async () => {
       try {
         const [prodRes, settingsRes] = await Promise.all([
-          axios.get('http://localhost:3000/products'),
-          axios.get('http://localhost:3000/admin-settings')
+          axios.get(import.meta.env.VITE_API_URL + '/products'),
+          axios.get(import.meta.env.VITE_API_URL + '/admin-settings')
         ]);
 
         const mappedCart = cart.map(cartItem => {
@@ -129,7 +129,7 @@ export default function Checkout() {
     formData.append('file', file);
     setUploading(true);
     try {
-      const res = await axios.post('http://localhost:3000/upload', formData);
+      const res = await axios.post(import.meta.env.VITE_API_URL + '/upload', formData);
       setForm({ ...form, paymentReceipt: res.data.url });
     } catch (err) {
       alert(t('error'));
@@ -172,7 +172,7 @@ export default function Checkout() {
         }))
       };
 
-      await axios.post('http://localhost:3000/orders', orderData, {
+      await axios.post(import.meta.env.VITE_API_URL + '/orders', orderData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

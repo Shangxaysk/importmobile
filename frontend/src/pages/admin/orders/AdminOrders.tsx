@@ -23,7 +23,7 @@ export default function AdminOrders() {
   const fetchOrders = useCallback(async (isAuto = false) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/orders', {
+      const res = await axios.get(import.meta.env.VITE_API_URL + '/orders', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setOrders(res.data);

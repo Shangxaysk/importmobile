@@ -16,7 +16,7 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/products');
+      const res = await axios.get(import.meta.env.VITE_API_URL + '/products');
       setProducts(res.data);
     } catch (err) {
       console.error("Xatolik:", err);

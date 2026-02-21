@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (phone: string, pass: string) => {
-    const res = await axios.post('http://localhost:3000/auth/login', { phone, password: pass });
+    const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/login', { phone, password: pass });
     
     // BACKENDDAN KELAYOTGAN MA'LUMOTLARNI SAQLASH
     const { access_token, user: userData } = res.data;
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (fullName: string, phone: string, pass: string) => {
-    const res = await axios.post('http://localhost:3000/auth/register', { fullName, phone, password: pass });
+    const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/register', { fullName, phone, password: pass });
     
     const { access_token, user: userData } = res.data;
     

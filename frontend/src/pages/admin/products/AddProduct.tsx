@@ -73,7 +73,7 @@ export default function AddProduct() {
   useEffect(() => {
     const fetchCats = async () => {
        try {
-         const res = await axios.get('http://localhost:3000/categories');
+         const res = await axios.get(import.meta.env.VITE_API_URL + '/categories');
          setCategories(res.data);
        } catch (e) { console.error(e); }
     };
@@ -170,7 +170,7 @@ export default function AddProduct() {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/products', formData, {
+      await axios.post(import.meta.env.VITE_API_URL + '/products', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}` 

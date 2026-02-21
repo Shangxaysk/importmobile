@@ -69,9 +69,9 @@ export default function Home() {
     const fetchHomeData = async () => {
       try {
         const [productsRes, bannersRes, categoriesRes] = await Promise.all([
-          axios.get('http://localhost:3000/products'),
-          axios.get('http://localhost:3000/banners'),
-          axios.get('http://localhost:3000/categories')
+          axios.get(import.meta.env.VITE_API_URL + '/products'),
+          axios.get(import.meta.env.VITE_API_URL + '/banners'),
+          axios.get(import.meta.env.VITE_API_URL + '/categories')
         ]);
 
         const mixedProducts = productsRes.data.sort(() => Math.random() - 0.5);

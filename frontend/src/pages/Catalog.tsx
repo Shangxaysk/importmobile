@@ -27,7 +27,7 @@ export default function Catalog() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('http://localhost:3000/categories');
+        const res = await axios.get(import.meta.env.VITE_API_URL + '/categories');
         setCategories(res.data);
       } catch (err) {
         console.error("Kataloglarni yuklashda xato:", err);

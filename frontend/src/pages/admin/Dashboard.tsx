@@ -26,9 +26,9 @@ export default function AdminDashboard() {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [ordersRes, productsRes, usersRes] = await Promise.all([
-          axios.get('http://localhost:3000/orders', { headers }),
-          axios.get('http://localhost:3000/products'),
-          axios.get('http://localhost:3000/users', { headers })
+          axios.get(import.meta.env.VITE_API_URL + '/orders', { headers }),
+          axios.get(import.meta.env.VITE_API_URL + '/products'),
+          axios.get(import.meta.env.VITE_API_URL + '/users', { headers })
         ]);
 
         const orders = ordersRes.data;

@@ -10,7 +10,7 @@ export default function AdminSettings() {
   const [form, setForm] = useState({ cardNumber: '', cardHolder: '' });
 
   useEffect(() => {
-    axios.get('http://localhost:3000/admin-settings')
+    axios.get(import.meta.env.VITE_API_URL + '/admin-settings')
       .then(res => setForm({ 
         cardNumber: res.data.cardNumber || '', 
         cardHolder: res.data.cardHolder || '' 
@@ -28,7 +28,7 @@ export default function AdminSettings() {
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/admin-settings', form, {
+      await axios.post(import.meta.env.VITE_API_URL + '/admin-settings', form, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert(t('settings_saved'));

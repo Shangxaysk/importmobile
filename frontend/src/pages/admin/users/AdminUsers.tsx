@@ -12,7 +12,7 @@ export default function AdminUsers() {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/users', {
+      const res = await axios.get(import.meta.env.VITE_API_URL + '/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data);

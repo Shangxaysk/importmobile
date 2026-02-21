@@ -38,7 +38,7 @@ export default function Contact() {
     window.scrollTo(0, 0);
     const fetchSettings = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/contact/settings');
+            const res = await axios.get(import.meta.env.VITE_API_URL + '/contact/settings');
             if (res.data) {
                 setContactInfo({
                     phone: res.data.phone,
@@ -76,7 +76,7 @@ export default function Contact() {
     if (requestFile) formData.append('file', requestFile);
 
     try {
-      await axios.post('http://localhost:3000/contact/product-search', formData, {
+      await axios.post(import.meta.env.VITE_API_URL + '/contact/product-search', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setStatus({ type: 'success', msg: t('request_success') });
@@ -95,7 +95,7 @@ export default function Contact() {
     setSavingInfo(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:3000/contact/settings', contactInfo, {
+      await axios.post(import.meta.env.VITE_API_URL + '/contact/settings', contactInfo, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setIsEditingInfo(false);
