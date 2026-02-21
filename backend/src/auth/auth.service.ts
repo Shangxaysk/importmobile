@@ -11,7 +11,9 @@ export class AuthService {
   ) {}
 
   // 1. REGISTRATSIYA METODI
-  async register(fullName: string, phone: string, pass: string) {
+  // telegramId ni qabul qiladigan qildik (ixtiyoriy bo'lishi uchun ? qo'yish mumkin, yoki default null)
+  async register(fullName: string, phone: string, pass: string, telegramId?: string) {
+    
     // Telefon raqami bandligini tekshiramiz
     const existingUser = await this.prisma.user.findUnique({
       where: { phoneNumber: phone }
@@ -30,7 +32,8 @@ export class AuthService {
         fullName: fullName,
         phoneNumber: phone,
         password: hashedPassword,
-        role: 'USER', // Yangi foydalanuvchilar har doim USER bo'ladi
+        role: 'USER', 
+        telegramId: telegramId || null, // <--- MANA SHU YERDA BAZAGA YOZILADI
       },
     });
 
@@ -53,7 +56,6 @@ export class AuthService {
 
   // 3. LOGIN (TOKEN YARATISH)
   async login(user: any) {
-    // Payload ichiga Frontend va Guard uchun kerakli ma'lumotlarni solamiz
     const payload = { 
       sub: user.id, 
       phone: user.phoneNumber, 
@@ -66,7 +68,8 @@ export class AuthService {
         id: user.id,
         fullName: user.fullName,
         phone: user.phoneNumber,
-        role: user.role
+        role: user.role,
+        telegramId: user.telegramId // Frontendga qaytarish uchun buni ham qo'shib qo'ydik
       }
     };
   }

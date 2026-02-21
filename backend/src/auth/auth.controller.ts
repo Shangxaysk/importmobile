@@ -18,10 +18,15 @@ export class AuthController {
     return this.authService.login(user);
   }
 
- @Post('register')
+  @Post('register')
   async register(@Body() body: any) {
     // Frontenddan kelayotgan ism "fullName" yoki "name" bo'lishi mumkin. 
-    // Agar frontend "name" yuborsa, body.name deb o'zgartiring.
-    return this.authService.register(body.fullName || body.name, body.phone, body.password);
+    // 3. telegramId ni ham AuthService-ga jo'natamiz
+    return this.authService.register(
+      body.fullName || body.name, 
+      body.phone, 
+      body.password,
+      body.telegramId // <--- MANA SHU QO'SHILDI
+    );
   }
 }

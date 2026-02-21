@@ -1,11 +1,19 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
+// TypeScript xato bermasligi uchun Telegram ob'ektini global tanitamiz
+declare global {
+  interface Window {
+    Telegram?: any;
+  }
+}
+
 interface User {
   id: number;
   fullName: string;
   phone: string;
   role: 'USER' | 'ADMIN';
+  telegramId?: string; // Kelajakda kerak bo'lishi mumkin deb buni ham qo'shdik
 }
 
 interface AuthContextType {
@@ -45,7 +53,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (fullName: string, phone: string, pass: string) => {
-    const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/register', { fullName, phone, password: pass });
+    
+    // 1. TELEGRAM ID NI USHLAB QOLAMIZ
+    const tg = window.Telegram?.WebApp;
+    const telegramId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
+
+    // 2. BACKENDGA telegramId NI QO'SHIB JO'NATAMIZ
+    const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/register', { 
+        fullName, 
+        phone, 
+        password: pass,
+        telegramId 
+    });
     
     const { access_token, user: userData } = res.data;
     
