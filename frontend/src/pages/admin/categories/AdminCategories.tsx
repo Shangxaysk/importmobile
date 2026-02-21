@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { 
   Trash2, Upload, Check, X, Smartphone, FolderPlus, 
-  ChevronRight, Laptop, Tablet, Watch, Headphones, 
-  Tv, Cpu, Gamepad2, Apple, Zap, Infinity, Palette,
-  Layers, LayoutGrid, Plus
+  Layers, LayoutGrid, Plus, Laptop, Tablet, Watch, Headphones, Tv, Cpu, Gamepad2, Apple, Zap, Infinity
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -37,6 +35,15 @@ export default function AdminCategories() {
     hasSpecs: false,
     parentId: ''
   });
+
+  // Rasm URL manzilini to'g'ri shakllantirish funksiyasi
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('blob:') || imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    return import.meta.env.VITE_API_URL + imagePath;
+  };
 
   const fetchCategories = async () => {
     try {
@@ -87,9 +94,9 @@ export default function AdminCategories() {
     if (!window.confirm(t('delete_confirm_short'))) return;
     try {
       const token = localStorage.getItem('token');
-     await axios.delete(`${import.meta.env.VITE_API_URL}/categories/${id}`, {
-  headers: { Authorization: `Bearer ${token}` }
-});
+      await axios.delete(`${import.meta.env.VITE_API_URL}/categories/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       fetchCategories();
     } catch (err) { alert(t('error')); }
   };
@@ -108,17 +115,20 @@ export default function AdminCategories() {
       <div className="sticky top-0 z-30 w-full bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto h-[80px] px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-             <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20">
-                <Layers size={24} />
-             </div>
-             <div>
-                <h1 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white leading-none">{t('categories_title')}</h1>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{t('control_panel')}</p>
-             </div>
+              <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/20">
+                 <Layers size={24} />
+              </div>
+              <div>
+                 <h1 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-white leading-none">{t('categories_title')}</h1>
+                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{t('control_panel')}</p>
+              </div>
           </div>
           
           <button 
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setForm({ nameUz: '', nameRu: '', image: '', icon: '', hasSpecs: false, parentId: '' });
+              setShowForm(true);
+            }}
             className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/30 active:scale-95 transition-all font-black text-xs uppercase tracking-widest"
           >
             <Plus size={18} strokeWidth={3} /> <span className="hidden sm:inline">{t('add_category_btn')}</span>
@@ -132,9 +142,9 @@ export default function AdminCategories() {
             <div key={cat.id} className="bg-white dark:bg-gray-900 rounded-[35px] border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all group flex flex-col">
                <div className="p-6 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-[22px] bg-gray-50 dark:bg-black flex items-center justify-center text-emerald-600 border border-gray-100 dark:border-gray-800 group-hover:scale-110 transition-transform duration-500">
+                    <div className="w-16 h-16 rounded-[22px] bg-gray-50 dark:bg-black flex items-center justify-center text-emerald-600 border border-gray-100 dark:border-gray-800 group-hover:scale-110 transition-transform duration-500 overflow-hidden">
                       {cat.image ? (
-                        <img src={cat.image} className="w-full h-full object-contain" />
+                        <img src={getImageUrl(cat.image)} className="w-full h-full object-contain" alt="" />
                       ) : (
                         cat.icon ? <IconRenderer name={cat.icon} className="w-8 h-8" /> : <FolderPlus size={28} />
                       )}
@@ -225,7 +235,11 @@ export default function AdminCategories() {
                   <div className="flex flex-col gap-4">
                      <div className="flex items-center gap-4 bg-gray-50 dark:bg-black p-5 rounded-[25px] border border-gray-100 dark:border-gray-800">
                         <div className="w-14 h-14 rounded-2xl bg-white dark:bg-gray-900 flex items-center justify-center text-emerald-600 border dark:border-gray-800 overflow-hidden shadow-inner">
-                          {form.image ? <img src={form.image} className="w-full h-full object-contain" /> : (form.icon ? <IconRenderer name={form.icon} className="w-7 h-7" /> : <Upload size={24} />)}
+                          {form.image ? (
+                            <img src={getImageUrl(form.image)} className="w-full h-full object-contain" alt="" />
+                          ) : (
+                            form.icon ? <IconRenderer name={form.icon} className="w-7 h-7" /> : <Upload size={24} />
+                          )}
                         </div>
                         <label className="flex-1 cursor-pointer bg-white dark:bg-gray-800 text-center py-4 rounded-2xl text-xs font-black uppercase tracking-widest border border-gray-100 dark:border-gray-700 hover:bg-emerald-50 transition-all shadow-sm dark:text-white">
                           {loading ? "..." : t('upload_image_btn')}
