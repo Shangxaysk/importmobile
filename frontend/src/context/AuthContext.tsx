@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-// TypeScript xato bermasligi uchun Telegram ob'ektini global tanitamiz
 declare global {
   interface Window {
     Telegram?: any;
@@ -13,7 +12,7 @@ interface User {
   fullName: string;
   phone: string;
   role: 'USER' | 'ADMIN';
-  telegramId?: string; // Kelajakda kerak bo'lishi mumkin deb buni ham qo'shdik
+  telegramId?: string;
 }
 
 interface AuthContextType {
@@ -30,37 +29,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Sahifa yangilanganda tokenni tekshirish
+  // SAHIFA YANGILANGANDA AVTOMATIK TEKSHIRISH (YANGILANDI)
   useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      // 1. Eski usul: Lokal xotirada bormi? (1-qurilma uchun)
+      const savedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      
+      if (savedUser && token) {
+        setUser(JSON.parse(savedUser));
+        setLoading(false);
+        return;
+      }
+
+      // 2. Yangi usul: Lokal xotira bo'sh bo'lsa, Telegram orqali urinib ko'ramiz (2-qurilma uchun)
+      const tg = window.Telegram?.WebApp;
+      const telegramId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
+
+      if (telegramId) {
+        try {
+          const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/telegram-login', { telegramId });
+          
+          const { access_token, user: userData } = res.data;
+          localStorage.setItem('token', access_token);
+          localStorage.setItem('user', JSON.stringify(userData));
+          setUser(userData);
+        } catch (error) {
+          // Bazada yo'q bo'lsa indamaymiz, o'zi register oynasiga o'tadi
+        }
+      }
+      
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
   const login = async (phone: string, pass: string) => {
     const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/login', { phone, password: pass });
     
-    // BACKENDDAN KELAYOTGAN MA'LUMOTLARNI SAQLASH
     const { access_token, user: userData } = res.data;
     
     localStorage.setItem('token', access_token);
-    localStorage.setItem('user', JSON.stringify(userData)); // { id, fullName, role, phone }
+    localStorage.setItem('user', JSON.stringify(userData)); 
     
-    setUser(userData); // State-ni yangilaymiz
+    setUser(userData);
   };
 
   const register = async (fullName: string, phone: string, pass: string) => {
-    
-    // 1. TELEGRAM ID NI USHLAB QOLAMIZ
     const tg = window.Telegram?.WebApp;
     const telegramId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
 
-  
-
-    // 2. BACKENDGA telegramId NI QO'SHIB JO'NATAMIZ
     const res = await axios.post(import.meta.env.VITE_API_URL + '/auth/register', { 
         fullName, 
         phone, 

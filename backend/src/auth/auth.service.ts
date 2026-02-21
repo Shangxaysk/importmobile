@@ -11,10 +11,7 @@ export class AuthService {
   ) {}
 
   // 1. REGISTRATSIYA METODI
-  // telegramId ni qabul qiladigan qildik (ixtiyoriy bo'lishi uchun ? qo'yish mumkin, yoki default null)
   async register(fullName: string, phone: string, pass: string, telegramId?: string) {
-    
-    // Telefon raqami bandligini tekshiramiz
     const existingUser = await this.prisma.user.findUnique({
       where: { phoneNumber: phone }
     });
@@ -23,21 +20,18 @@ export class AuthService {
       throw new ConflictException('Bu telefon raqami allaqachon ro\'yxatdan o\'tgan!');
     }
 
-    // Parolni shifrlaymiz
     const hashedPassword = await bcrypt.hash(pass, 10);
 
-    // Bazaga saqlaymiz
     const user = await this.prisma.user.create({
       data: {
         fullName: fullName,
         phoneNumber: phone,
         password: hashedPassword,
         role: 'USER', 
-        telegramId: telegramId || null, // <--- MANA SHU YERDA BAZAGA YOZILADI
+        telegramId: telegramId || null, 
       },
     });
 
-    // Ro'yxatdan o'tgach srazu login qilib, token yuboramiz
     return this.login(user);
   }
 
@@ -69,8 +63,21 @@ export class AuthService {
         fullName: user.fullName,
         phone: user.phoneNumber,
         role: user.role,
-        telegramId: user.telegramId // Frontendga qaytarish uchun buni ham qo'shib qo'ydik
+        telegramId: user.telegramId
       }
     };
+  }
+
+  // 4. TELEGRAM ID ORQALI LOGIN QILISH (YANGI QO'SHILDI)
+  async loginWithTelegram(telegramId: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { telegramId: telegramId }
+    });
+
+    if (!user) {
+      return null; 
+    }
+
+    return this.login(user);
   }
 }
