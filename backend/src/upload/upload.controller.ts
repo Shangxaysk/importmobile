@@ -1,48 +1,27 @@
-import { 
-  Controller, Post, Body, Patch, Param, UseInterceptors, UploadedFile, UseGuards 
-} from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer'; // Disk emas, RAM
-import { UploadService } from '../upload/upload.service'; // Cloudinary xizmati
-import { CategoriesService } from '../categories/categories.service'; // Kategoriyalar servisi
+import { memoryStorage } from 'multer';
+import { UploadService } from './upload.service';
 
-@Controller('categories')
-export class CategoriesController {
-  constructor(
-    private readonly categoriesService: CategoriesService,
-    private readonly uploadService: UploadService // Cloudinary servisini ulaymiz
-  ) {}
+@Controller('upload')
+export class UploadController {
+  constructor(private readonly uploadService: UploadService) {}
 
   @Post()
-  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
-  async create(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
-    let imagePath = null;
-
-    if (file) {
-      // Rasmni Cloudinaryga yuboramiz
-      const result = await this.uploadService.uploadFile(file);
-      imagePath = result.secure_url; // Endi bazaga /uploads/... emas, https://cloudinary... tushadi
+  @UseInterceptors(FileInterceptor('file', {
+    storage: memoryStorage(), // Faylni RAMga olamiz
+  }))
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException("Fayl yuklanmadi!");
     }
 
-    const hasSpecs = String(body.hasSpecs) === 'true';
-    const parentId = body.parentId && body.parentId !== 'null' ? Number(body.parentId) : null;
+    // Faylni ImgBB'ga (UploadService orqali) yuklaymiz
+    const result = await this.uploadService.uploadFile(file);
 
-    return this.categoriesService.create({ ...body, hasSpecs, parentId }, imagePath);
-  }
-
-  @Patch(':id')
-  @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
-  async update(@Param('id') id: string, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
-    let imagePath = undefined;
-
-    if (file) {
-      const result = await this.uploadService.uploadFile(file);
-      imagePath = result.secure_url;
-    }
-
-    const hasSpecs = String(body.hasSpecs) === 'true';
-    const parentId = body.parentId && body.parentId !== 'null' ? Number(body.parentId) : null;
-
-    return this.categoriesService.update(+id, { ...body, hasSpecs, parentId }, imagePath);
+    // Frontendga tayyor HTTPS URL ni qaytaramiz
+    return { 
+      url: result.secure_url 
+    };
   }
 }
