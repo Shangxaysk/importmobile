@@ -68,6 +68,11 @@ export const translations = {
     our_contacts: "Bizning kontaktlar",
     save_success: "Aloqa ma'lumotlari muvaffaqiyatli yangilandi!",
     save_error: "Saqlashda xatolik yuz berdi!",
+    upload_image: "Rasm yuklash",
+    phone: "Telefon raqam",
+    telegram: "Telegram",
+    address: "Manzil",
+    email: "Email",
 
     // === FAVORITES PAGE ===
     favorites: "Yoqtirganlarim",
@@ -460,6 +465,12 @@ export const translations = {
     our_contacts: "Наши контакты",
     save_success: "Контактные данные успешно обновлены!",
     save_error: "Произошла ошибка при сохранении!",
+    upload_image: "Загрузить фото",
+    phone: "Телефонный номер",
+    telegram: "Telegram",
+    address: "Адрес",
+    email: "Email",
+
 
     // === FAVORITES PAGE ===
     favorites: "Избранное",

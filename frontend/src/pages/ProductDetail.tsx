@@ -7,8 +7,9 @@ import {
     Minus, Plus, CheckCircle, X, Maximize2
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useLanguage } from '../context/LanguageContext'; // QO'SHILDI
+import { useLanguage } from '../context/LanguageContext';
 import { useWishlist } from '../context/WishlistContext';
+import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
 
 // --- FONT STILI ---
 const fontStyle = `
@@ -44,7 +45,7 @@ export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { t } = useLanguage(); // QO'SHILDI
+  const { t } = useLanguage();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<any>(null);
@@ -63,16 +64,14 @@ export default function ProductDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-   axios.get(`${import.meta.env.VITE_API_URL}/products/${id}`)
-  .then((res) => {
-    const data = res.data;
-    setProduct(data);
-    
-    if (data.images && data.images.length > 0) {
-      // Rasmni ko'rsatishda ham ehtiyot bo'ling: 
-      // Agar bazada rasm yo'li to'liq bo'lmasa, API URL ni qo'shish kerak bo'ladi
-      setMainImage(data.images[0]);
-    }
+    axios.get(`${import.meta.env.VITE_API_URL}/products/${id}`)
+      .then((res) => {
+        const data = res.data;
+        setProduct(data);
+        
+        if (data.images && data.images.length > 0) {
+          setMainImage(data.images[0]);
+        }
 
         if (data.specifications) {
             try {
@@ -102,7 +101,7 @@ export default function ProductDetail() {
         name: product.name, 
         price: finalPrice, 
         quantity, 
-        image: mainImage, 
+        image: getImageUrl(mainImage), // TO'G'IRLANDI
         selectedOptions: { 
             ram: activeVariant?.ram, 
             rom: activeVariant?.rom, 
@@ -119,7 +118,7 @@ export default function ProductDetail() {
         id: product.id.toString(),
         name: product.name,
         price: activeVariant ? Number(activeVariant.price) : Number(product.price),
-        image: mainImage
+        image: getImageUrl(mainImage) // TO'G'IRLANDI
       });
     }
   };
@@ -156,7 +155,8 @@ export default function ProductDetail() {
             <button className="absolute top-6 right-6 p-2 bg-white/10 rounded-full text-white hover:bg-white/20 transition">
                 <X size={24} />
             </button>
-            <img src={mainImage} alt={product.name} className="max-w-full max-h-full object-contain" />
+            {/* TO'G'IRLANDI */}
+            <img src={getImageUrl(mainImage)} alt={product.name} className="max-w-full max-h-full object-contain" />
         </div>
       )}
 
@@ -173,10 +173,10 @@ export default function ProductDetail() {
             
             <div className="flex gap-3 z-10">
                 <button onClick={handleWishlist} className="active:scale-90 transition text-gray-900 dark:text-white">
-                   <Heart size={22} strokeWidth={1.5} className={isFavorite ? "fill-red-500 text-red-500 border-none" : ""} />
+                    <Heart size={22} strokeWidth={1.5} className={isFavorite ? "fill-red-500 text-red-500 border-none" : ""} />
                 </button>
                 <button className="active:scale-90 transition text-gray-900 dark:text-white">
-                   <Share2 size={22} strokeWidth={1.5} />
+                    <Share2 size={22} strokeWidth={1.5} />
                 </button>
             </div>
         </div>
@@ -188,7 +188,8 @@ export default function ProductDetail() {
              className="relative w-full aspect-square md:aspect-[4/3] bg-white flex items-center justify-center cursor-zoom-in border-b border-gray-100 dark:border-gray-800"
              onClick={() => setIsImageOpen(true)}
           >
-             <img src={mainImage} className="w-[80%] h-[80%] object-contain mix-blend-multiply transition-all duration-300" alt={product.name} />
+             {/* TO'G'IRLANDI */}
+             <img src={getImageUrl(mainImage)} className="w-[80%] h-[80%] object-contain transition-all duration-300" alt={product.name} />
              <div className="absolute bottom-4 right-4 bg-gray-100 p-2 rounded-full opacity-50"><Maximize2 size={16} className="text-black" /></div>
           </div>
 

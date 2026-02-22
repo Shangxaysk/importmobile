@@ -3,21 +3,23 @@ import { Type } from 'class-transformer';
 
 class OrderItemDto {
   @IsNumber()
+  @Type(() => Number) // Stringni raqamga aylantiradi
   productId: number;
 
   @IsNumber()
+  @Type(() => Number)
   quantity: number;
 
   @IsNumber()
+  @Type(() => Number)
   price: number;
 
   @IsOptional()
   @IsString()
-  config?: string; // Rang, Xotira
+  config?: string;
 }
 
 export class CreateOrderDto {
-  // --- ORDER MA'LUMOTLARI (Bazaga yoziladi) ---
   @IsString()
   address: string;
 
@@ -37,9 +39,10 @@ export class CreateOrderDto {
   comment?: string;
 
   @IsString()
-  paymentReceipt: string; // Rasm URL
+  paymentReceipt: string; // ImgBB dan kelgan URL
 
   @IsNumber()
+  @Type(() => Number)
   totalPrice: number;
 
   @IsArray()
@@ -47,14 +50,13 @@ export class CreateOrderDto {
   @Type(() => OrderItemDto)
   items: OrderItemDto[];
 
-  // --- XAVFSIZLIK: PASSPORT MA'LUMOTLARI (Bazaga YOZILMAYDI) ---
-  // Bular faqat Controller orqali o'tadi va Botga ketadi
+  // Passport ma'lumotlari (Faqat Bot uchun)
   @IsString()
-  passportSeria: string; // AA
+  passportSeria: string;
 
   @IsString()
-  passportNumber: string; // 1234567
+  passportNumber: string;
 
   @IsString()
-  passportPinfl: string; // 14 ta raqam
+  passportPinfl: string;
 }

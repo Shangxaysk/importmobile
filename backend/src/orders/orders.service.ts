@@ -10,10 +10,9 @@ export class OrdersService {
     private botService: BotService,
   ) {}
 
-  // 1. BUYURTMA YARATISH
   async create(userId: number, dto: any) {
     if (!dto.items || !Array.isArray(dto.items) || dto.items.length === 0) {
-      throw new BadRequestException("Buyurtma uchun mahsulotlar (items) tanlanmagan!");
+      throw new BadRequestException("Savat bo'sh!");
     }
 
     try {
@@ -29,15 +28,15 @@ export class OrdersService {
           extraPhone: dto.extraPhone,
           telegramUser: dto.telegramUser,
           comment: dto.comment,
-          totalPrice: dto.totalPrice,
-          paymentReceipt: dto.paymentReceipt,
+          totalPrice: Number(dto.totalPrice),
+          paymentReceipt: dto.paymentReceipt, // ImgBB linki kelsa yaxshi
           status: 'NEW',
           deliveryDays: 15,
           items: {
             create: dto.items.map((item: any) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              price: item.price,
+              productId: Number(item.productId),
+              quantity: Number(item.quantity),
+              price: Number(item.price),
               config: item.config || 'Standart'
             })),
           },
@@ -54,17 +53,15 @@ export class OrdersService {
       try {
           await this.botService.sendOrderToAdmin(order, passportData);
       } catch (e) {
-          console.error("Botga yuborishda xato, lekin buyurtma saqlandi:", e);
+          console.error("Botga yuborishda xato:", e);
       }
 
       return order;
     } catch (error) {
-      console.error("Buyurtma yaratishda baza xatosi:", error);
-      throw new HttpException("Buyurtma yaratishda xatolik yuz berdi", HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException("Order create error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  // 2. ADMIN UCHUN HAMMA BUYURTMALAR
   async findAll() {
     return this.prisma.order.findMany({
       include: { user: true, items: { include: { product: true } } },
@@ -72,7 +69,6 @@ export class OrdersService {
     });
   }
 
-  // 3. MIJOZ UCHUN O'Z BUYURTMALARI
   async findMyOrders(userId: number) {
     return this.prisma.order.findMany({
       where: { userId },
@@ -81,14 +77,13 @@ export class OrdersService {
     });
   }
 
-  // 4. ADMIN TOMONIDAN STATUSNI O'ZGARTIRISH
   async updateStatus(id: string, action: string, reason?: string) {
     const order = await this.prisma.order.findUnique({ 
       where: { id },
       include: { user: true } 
     });
 
-    if (!order) throw new NotFoundException("Buyurtma topilmadi");
+    if (!order) throw new NotFoundException("Topilmadi");
 
     let newStatus = order.status;
     let notifyMessage = "";
@@ -96,59 +91,37 @@ export class OrdersService {
     switch (action) {
       case 'APPROVE':
         newStatus = 'APPROVED';
-        notifyMessage = `✅ <b>Buyurtmangiz qabul qilindi!</b>\n\n🆔: ${order.id}\nTez orada yetkazib berish jarayoni boshlanadi.`;
+        notifyMessage = `✅ <b>Buyurtmangiz qabul qilindi!</b>\n🆔: ${order.id}`;
         break;
-
       case 'REJECT_FRAUD':
         newStatus = 'REJECTED';
-        await this.prisma.user.update({
-          where: { id: order.userId },
-          data: { isBlocked: true }
-        });
-        notifyMessage = `🚫 <b>Sizning hisobingiz bloklandi!</b>\n\nSabab: Yolg'on to'lov cheki aniqlandi.`;
+        await this.prisma.user.update({ where: { id: order.userId }, data: { isBlocked: true } });
+        notifyMessage = `🚫 <b>Bloklandingiz!</b> Fake chek aniqlandi.`;
         break;
-
       case 'REJECT_WRONG_IMAGE':
         newStatus = 'WAITING_CHECK';
-        notifyMessage = `⚠️ <b>To'lov chekida xatolik!</b>\n\n🆔: ${order.id}\nSiz yuklagan chek rasmi xato yoki sifatsiz.\n\n🔄 <b>Iltimos, haqiqiy chekni botga qaytadan yuboring.</b>`;
+        notifyMessage = `⚠️ <b>To'lov cheki xato!</b>\n🆔: ${order.id}\nIltimos, haqiqiy chekni botga qaytadan yuboring.`;
         break;
-
-      case 'REJECT_OTHER':
-        newStatus = 'REJECTED';
-        notifyMessage = `❌ <b>Buyurtma bekor qilindi.</b>\n\n🆔: ${order.id}\n💬 Sabab: ${reason || "Noma'lum"}`;
-        break;
-      
       default:
-        newStatus = action as any; 
+        newStatus = action as any;
         break;
     }
 
     const updatedOrder = await this.prisma.order.update({
       where: { id },
-      data: { 
-        status: newStatus,
-        rejectReason: reason || action
-      }
+      data: { status: newStatus, rejectReason: reason }
     });
 
     if (order.user.telegramId) {
-      try {
-        await this.botService.sendMessageToUser(order.user.telegramId, notifyMessage);
-      } catch (e) {
-        console.warn(`Telegram xabar yuborilmadi: ${order.user.telegramId}`);
-      }
+      try { await this.botService.sendMessageToUser(order.user.telegramId, notifyMessage); } catch (e) {}
     }
 
     return updatedOrder;
   }
 
-  // 5. BOT ORQALI CHEKNI YANGILASH
   async updateReceiptFromBot(orderId: string, imageUrl: string) {
-    const order = await this.prisma.order.findUnique({ 
-      where: { id: orderId } 
-    });
-
-    if (!order) throw new NotFoundException("Buyurtma topilmadi");
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException("Topilmadi");
 
     return this.prisma.order.update({
       where: { id: orderId },
@@ -160,23 +133,17 @@ export class OrdersService {
     });
   }
 
-  // 6. ADMIN XABARINI YANGILASH (#IMPRT CHAT LOGIKASI)
- async updateAdminMessage(id: string, newMessage: string) {
+  async updateAdminMessage(id: string, newMessage: string) {
     const order = await this.prisma.order.findUnique({ where: { id } });
-    if (!order) throw new NotFoundException("Buyurtma topilmadi");
+    if (!order) throw new NotFoundException("Topilmadi");
 
-    // XATONI TO'G'IRLASH: Massiv turini any[] yoki interface orqali belgilaymiz
     let messageHistory: any[] = []; 
-    
     try {
       if (order.adminMessage) {
         const parsed = JSON.parse(order.adminMessage);
-        messageHistory = Array.isArray(parsed) ? parsed : [{ text: order.adminMessage, date: order.updatedAt }];
+        messageHistory = Array.isArray(parsed) ? parsed : [];
       }
-    } catch (e) {
-      // Agar JSON bo'lmasa, oddiy string deb hisoblaymiz
-      messageHistory = [{ text: order.adminMessage, date: order.updatedAt }];
-    }
+    } catch (e) { messageHistory = []; }
 
     const updatedHistory = JSON.stringify([
       { text: newMessage, date: new Date() },
@@ -185,30 +152,23 @@ export class OrdersService {
 
     const updatedOrder = await this.prisma.order.update({
       where: { id },
-      data: { 
-        adminMessage: updatedHistory,
-        isMessageRead: false 
-      },
+      data: { adminMessage: updatedHistory, isMessageRead: false },
       include: { user: true }
     });
 
     if (updatedOrder.user.telegramId) {
-        try {
-            await this.botService.sendMessageToUser(
-                updatedOrder.user.telegramId, 
-                `🔔 <b>Yangi bildirishnoma (#${updatedOrder.id}):</b>\n\n${newMessage}`
-            );
-        } catch (e) {}
+      try {
+        await this.botService.sendMessageToUser(
+          updatedOrder.user.telegramId, 
+          `🔔 <b>Xabar (#${updatedOrder.id}):</b>\n\n${newMessage}`
+        );
+      } catch (e) {}
     }
 
     return updatedOrder;
   }
 
-  // 7. XABARNI O'QILGAN DEB BELGILASH
   async markMessageAsRead(id: string) {
-    return this.prisma.order.update({
-      where: { id },
-      data: { isMessageRead: true }
-    });
+    return this.prisma.order.update({ where: { id }, data: { isMessageRead: true } });
   }
 }

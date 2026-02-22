@@ -6,6 +6,7 @@ import {
   Palette, Move, ExternalLink, Box
 } from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
+import { getImageUrl } from '../../../utils/image'; // TO'G'IRLANDI
 
 export default function AdminBanners() {
   const [banners, setBanners] = useState<any[]>([]);
@@ -59,7 +60,7 @@ export default function AdminBanners() {
 
     setUploading(true);
     const formData = new FormData();
-    formData.append('image', file);
+    formData.append('image', file); // Backend kutilayotgan kalit
     formData.append('title', title);
     formData.append('linkType', linkType);
     formData.append('linkValue', linkValue);
@@ -93,8 +94,6 @@ export default function AdminBanners() {
   const handleDelete = async (id: number) => {
     if (!window.confirm(t('delete_confirm_short'))) return;
     const token = localStorage.getItem('token');
-    
-    // http://localhost:3000 o'rniga dinamik manzil qo'shildi
     await axios.delete(`${import.meta.env.VITE_API_URL}/banners/${id}`, { 
         headers: { Authorization: `Bearer ${token}` }
     });
@@ -103,8 +102,6 @@ export default function AdminBanners() {
 
 const toggleStatus = async (id: number) => {
     const token = localStorage.getItem('token');
-    
-    // http://localhost:3000 o'rniga dinamik manzil qo'shildi
     await axios.patch(`${import.meta.env.VITE_API_URL}/banners/${id}/toggle`, {}, { 
         headers: { Authorization: `Bearer ${token}` }
     });
@@ -134,7 +131,7 @@ const toggleStatus = async (id: number) => {
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-black font-inter transition-colors duration-300">
       
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <div className="sticky top-0 z-30 w-full bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-6xl mx-auto h-[70px] md:h-[90px] px-4 flex items-center justify-between">
           <div className="flex items-center gap-3 md:gap-4">
@@ -167,7 +164,8 @@ const toggleStatus = async (id: number) => {
             {banners.map((banner) => (
               <div key={banner.id} className={`bg-white dark:bg-gray-900 rounded-[35px] border border-gray-100 dark:border-gray-800 overflow-hidden relative group shadow-sm hover:shadow-xl transition-all ${!banner.isActive ? 'opacity-50 grayscale' : ''}`}>
                 <div className="aspect-video bg-gray-100 dark:bg-black relative overflow-hidden">
-                  <img src={banner.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
+                  {/* TO'G'IRLANDI: getImageUrl qo'shildi */}
+                  <img src={getImageUrl(banner.image)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" />
                   {banner.badgeText && (
                     <div 
                       className={`absolute px-3 py-1 rounded-lg text-[10px] font-black shadow-lg uppercase tracking-wider ${getPosClass(banner.badgePosition)}`}
@@ -206,7 +204,7 @@ const toggleStatus = async (id: number) => {
         )}
       </div>
 
-      {/* --- MODAL --- */}
+      {/* MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center md:justify-end">
            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsModalOpen(false)}></div>
@@ -255,7 +253,7 @@ const toggleStatus = async (id: number) => {
                         setPreview(URL.createObjectURL(e.target.files[0]));
                       }
                     }} className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
-                  </div>
+                   </div>
                 </div>
 
                 {/* 2. BADGE CUSTOMIZER */}

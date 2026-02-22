@@ -6,6 +6,7 @@ import {
   Package, Image as ImageIcon 
 } from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
+import { getImageUrl } from '../../../utils/image'; // 1. MARKAZIY FUNKSIYANI IMPORT QILDIK
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<any[]>([]);
@@ -35,8 +36,8 @@ export default function AdminProducts() {
       try {
         const token = localStorage.getItem('token');
         await axios.delete(`${import.meta.env.VITE_API_URL}/products/${id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-});
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setProducts(products.filter(p => p.id !== id));
       } catch (err) {
         alert(t('delete_error'));
@@ -106,7 +107,8 @@ export default function AdminProducts() {
                 <div key={product.id} className="bg-white dark:bg-gray-900 p-4 rounded-[30px] border border-gray-100 dark:border-gray-800 shadow-sm flex items-center gap-4">
                   <div className="w-20 h-20 bg-gray-50 dark:bg-black rounded-2xl border border-gray-50 dark:border-gray-800 p-2 flex-shrink-0">
                     {product.images?.[0] ? (
-                      <img src={product.images[0]} alt="" className="w-full h-full object-contain" />
+                      /* 2. MOBILE RASM QISMI TO'G'IRLANDI */
+                      <img src={getImageUrl(product.images[0])} alt="" className="w-full h-full object-contain" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={24}/></div>
                     )}
@@ -153,7 +155,8 @@ export default function AdminProducts() {
                         <div className="flex items-center gap-4">
                           <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-50 dark:bg-black border border-gray-100 dark:border-gray-800 flex-shrink-0 p-2 group-hover:scale-105 transition-transform duration-300">
                             {product.images?.[0] ? (
-                              <img src={product.images[0]} alt="" className="w-full h-full object-contain" />
+                              /* 3. DESKTOP RASM QISMI TO'G'IRLANDI */
+                              <img src={getImageUrl(product.images[0])} alt="" className="w-full h-full object-contain" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={20}/></div>
                             )}

@@ -3,7 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2, ShoppingBag, ChevronLeft, Check } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { useLanguage } from '../context/LanguageContext'; // QO'SHILDI
+import { useLanguage } from '../context/LanguageContext';
+import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
 
 // --- FONT STILI ---
 const fontStyle = `
@@ -19,7 +20,7 @@ export default function CategoryPage() {
   
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { t, language } = useLanguage(); // QO'SHILDI
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     setLoading(true);
@@ -45,7 +46,7 @@ export default function CategoryPage() {
       name: product.name,
       price: Number(product.price),
       quantity: 1,
-      image: product.images[0],
+      image: getImageUrl(product.images[0]), // TO'G'IRLANDI
     });
 
     setAddedItems({ ...addedItems, [product.id]: true });
@@ -55,18 +56,18 @@ export default function CategoryPage() {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-full bg-white dark:bg-black text-blue-600">
+    <div className="flex justify-center items-center h-full min-h-[400px] bg-white dark:bg-black text-emerald-600">
         <Loader2 className="animate-spin" size={40} />
     </div>
   );
 
-  if (!category) return <div className="text-center mt-20 font-inter">{t('category_not_found')}</div>;
+  if (!category) return <div className="text-center mt-20 font-inter dark:text-white">{t('category_not_found')}</div>;
 
   return (
     <div className="min-h-full bg-white dark:bg-black font-inter transition-colors duration-300">
       <style>{fontStyle}</style>
 
-      {/* --- HEADER (STANDART) --- */}
+      {/* --- HEADER --- */}
       <div className="sticky top-0 z-40 w-full bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
         <div className="relative max-w-md mx-auto h-[60px] px-4 flex items-center">
             <button 
@@ -96,7 +97,7 @@ export default function CategoryPage() {
                   {/* Rasm Kapsulasi */}
                   <div className="relative aspect-[4/5] bg-white rounded-2xl mb-3 flex items-center justify-center p-4 border border-gray-100 dark:border-gray-800/60 shadow-sm overflow-hidden">
                      <img 
-                       src={product.images[0]} 
+                       src={getImageUrl(product.images[0])} // TO'G'IRLANDI
                        className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105" 
                        alt={product.name} 
                      />
@@ -104,7 +105,7 @@ export default function CategoryPage() {
 
                   {/* Ma'lumotlar */}
                   <div className="px-1 flex flex-col gap-1">
-                     <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug line-clamp-2 h-9 group-hover:text-blue-600 transition-colors">
+                     <h3 className="text-sm font-bold text-gray-900 dark:text-white leading-snug line-clamp-2 h-9 group-hover:text-emerald-600 transition-colors">
                          {product.name}
                      </h3>
 

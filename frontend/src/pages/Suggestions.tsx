@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ChevronLeft, Paperclip, Send, X, FileText, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext'; // QO'SHILDI
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Suggestions() {
   const navigate = useNavigate();
-  const { t } = useLanguage(); // QO'SHILDI
+  const { t } = useLanguage();
   const [message, setMessage] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -15,6 +15,7 @@ export default function Suggestions() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
+      // 5MB limit
       if (selectedFile.size > 5 * 1024 * 1024) {
         alert(t('file_size_error'));
         return;
@@ -33,7 +34,8 @@ export default function Suggestions() {
     const formData = new FormData();
     formData.append('message', message);
     if (file) {
-      formData.append('file', file); 
+      // Backend'dagi yangi upload mantiqiga moslashish uchun 'image' kaliti ishlatildi
+      formData.append('image', file); 
     }
 
     try {
@@ -47,6 +49,7 @@ export default function Suggestions() {
       setMessage('');
       setFile(null);
       
+      // Muvaffaqiyatli yuborilgandan so'ng 3 soniyada profilga qaytadi
       setTimeout(() => navigate('/account'), 3000); 
     } catch (error: any) {
       console.error("Yuborishda xatolik:", error.response?.data || error.message);
@@ -82,9 +85,9 @@ export default function Suggestions() {
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl">
                     <FileText size={24} />
                 </div>
-                <div>
+                <div className="text-left">
                     <h3 className="font-bold text-gray-900 dark:text-white leading-tight">{t('write_to_us')}</h3>
-                    <p className="text-xs text-gray-500 text-left">{t('suggestions_desc')}</p>
+                    <p className="text-xs text-gray-500">{t('suggestions_desc')}</p>
                 </div>
             </div>
 
@@ -96,7 +99,7 @@ export default function Suggestions() {
                     className="w-full p-4 bg-gray-50 dark:bg-black border border-gray-100 dark:border-gray-800 rounded-2xl outline-none focus:border-emerald-500 min-h-[150px] transition-all text-sm text-gray-900 dark:text-white placeholder:text-gray-400"
                 ></textarea>
 
-                {/* Fayl yuklash */}
+                {/* Fayl yuklash qismi */}
                 <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-3">
                         <label className="cursor-pointer flex items-center gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm font-medium w-full justify-center border border-dashed border-gray-300 dark:border-gray-700 hover:border-emerald-500">
@@ -128,7 +131,7 @@ export default function Suggestions() {
                     {loading ? <Loader2 className="animate-spin text-white" /> : <><Send size={18} /> {t('send')}</>}
                 </button>
 
-                {/* Status Xabari */}
+                {/* Status xabari */}
                 {status && (
                     <div className={`flex items-center justify-center gap-2 text-sm font-medium p-4 rounded-2xl mt-4 animate-fade-in ${
                         status.type === 'success' 

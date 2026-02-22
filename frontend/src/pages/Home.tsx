@@ -11,6 +11,7 @@ import 'swiper/swiper-bundle.css';
 
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
 
 interface Banner {
   id: number;
@@ -101,7 +102,7 @@ export default function Home() {
       name: product.name,
       price: Number(product.price),
       quantity: 1,
-      image: product.images[0],
+      image: getImageUrl(product.images[0]), // TO'G'IRLANDI
     });
 
     setAddedItems({ ...addedItems, [product.id]: true });
@@ -112,7 +113,8 @@ export default function Home() {
 
   const renderBrandIcon = (brand: any) => {
     if (brand.image) {
-        return <img src={brand.image} className="w-full h-full object-contain filter drop-shadow-sm dark:invert" alt={language === 'ru' ? (brand.nameRu || brand.nameUz) : brand.nameUz} />;
+        // TO'G'IRLANDI: dark:invert olib tashlandi yoki getImageUrl ishlatildi
+        return <img src={getImageUrl(brand.image)} className="w-full h-full object-contain filter drop-shadow-sm" alt={brand.nameUz} />;
     }
     if (brand.icon) {
         const IconComponent = (LucideIcons as any)[brand.icon];
@@ -147,7 +149,8 @@ export default function Home() {
                   className="relative aspect-[2/1] md:aspect-[21/9] cursor-pointer rounded-2xl overflow-hidden shadow-lg dark:shadow-none bg-gray-100 dark:bg-gray-900" 
                   onClick={() => navigate(banner.linkValue)}
                 >
-                  <img src={banner.image} alt="" className="w-full h-full object-cover" />
+                  {/* TO'G'IRLANDI */}
+                  <img src={getImageUrl(banner.image)} alt="" className="w-full h-full object-cover" />
                   {banner.badgeText && (
                     <div 
                       className={`absolute px-4 py-1.5 rounded-lg text-xs md:text-sm font-black uppercase tracking-widest shadow-md z-20 ${getBadgePositionClass(banner.badgePosition)}`}
@@ -201,12 +204,13 @@ export default function Home() {
                 
                 {/* Rasm Kapsulasi (Oq fon) */}
                 <div className="relative aspect-[4/5] bg-white rounded-2xl mb-3 flex items-center justify-center p-4 border border-gray-100 dark:border-gray-800/60 shadow-sm dark:shadow-none overflow-hidden">
-                   <div className="absolute top-2 left-2 z-10">
-                       <span className="px-2 py-0.5 bg-emerald-600 rounded-md text-[9px] font-bold uppercase text-white shadow-sm tracking-wide">
+                    <div className="absolute top-2 left-2 z-10">
+                        <span className="px-2 py-0.5 bg-emerald-600 rounded-md text-[9px] font-bold uppercase text-white shadow-sm tracking-wide">
                           {language === 'ru' ? (product.category?.nameRu || product.category?.nameUz) : product.category?.nameUz}
-                       </span>
-                   </div>
-                   <img src={product.images[0]} className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105" alt={product.name} />
+                        </span>
+                    </div>
+                    {/* TO'G'IRLANDI */}
+                    <img src={getImageUrl(product.images[0])} className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105" alt={product.name} />
                 </div>
 
                 {/* Ma'lumot */}

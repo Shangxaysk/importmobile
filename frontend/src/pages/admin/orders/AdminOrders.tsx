@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { 
   CheckCircle, Ban, Package, Eye, X, 
-  Send, MessageCircle, Clock, Filter, Search, MapPin, ChevronRight, AlertTriangle 
+  Send, MessageCircle, Clock, Filter, Search, MapPin, Loader2, ChevronRight, AlertTriangle 
 } from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
+import { getImageUrl } from '../../../utils/image'; // TO'G'IRLANDI
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -49,9 +50,9 @@ export default function AdminOrders() {
       const encodedId = encodeURIComponent(id);
       
       await axios.patch(`${import.meta.env.VITE_API_URL}/orders/${encodedId}/status`, 
-    { action, reason }, 
-    { headers: { Authorization: `Bearer ${token}` } }
-);
+        { action, reason }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       
       setShowRejectModal(false);
       setPreviewOrder(null);
@@ -106,11 +107,8 @@ export default function AdminOrders() {
   });
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center dark:bg-black font-inter">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-500 font-black uppercase tracking-widest text-xs text-center">{t('loading')}</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center dark:bg-black font-inter text-emerald-600">
+        <Loader2 className="animate-spin" size={40} />
     </div>
   );
 
@@ -269,7 +267,7 @@ export default function AdminOrders() {
                                         <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                                     </button>
                                 ) : (
-                                    <div className="text-center p-4 text-xs font-bold text-gray-400 italic bg-gray-100 dark:bg-gray-800/50 rounded-2xl uppercase tracking-widest text-center">{t('no_receipt')}</div>
+                                    <div className="text-center p-4 text-xs font-bold text-gray-400 italic bg-gray-100 dark:bg-gray-800/50 rounded-2xl uppercase tracking-widest">{t('no_receipt')}</div>
                                 )}
                             </div>
 
@@ -292,7 +290,8 @@ export default function AdminOrders() {
             </div>
 
             <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-gray-200 dark:bg-black">
-              <img src={previewOrder.paymentReceipt} className="max-w-full h-auto rounded-3xl shadow-2xl border-8 border-white dark:border-gray-800" />
+              {/* TO'G'IRLANDI: getImageUrl qo'shildi */}
+              <img src={getImageUrl(previewOrder.paymentReceipt)} className="max-w-full h-auto rounded-3xl shadow-2xl border-8 border-white dark:border-gray-800" alt="Receipt" />
             </div>
 
             <div className="p-8 border-t dark:border-gray-800 bg-white dark:bg-gray-900">

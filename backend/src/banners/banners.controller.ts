@@ -4,54 +4,39 @@ import {
 } from '@nestjs/common';
 import { BannersService } from './banners.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { memoryStorage } from 'multer'; // RAMga o'tdik
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-
-// Yangi DTO ni shu yerda e'lon qilib qo'ya qolamiz (alohida fayl shart emas)
-class CreateBannerDto {
-  title?: string;
-  linkType: 'PRODUCT' | 'CATEGORY' | 'EXTERNAL';
-  linkValue: string; // ID yoki URL
-  badgeText?: string;
-  badgeStyle?: string;
-  isActive?: string; // Form-data dan string bo'lib keladi
-}
+import { UploadService } from '../upload/upload.service';
 
 @Controller('banners')
 export class BannersController {
-  constructor(private readonly bannersService: BannersService) {}
+  constructor(
+    private readonly bannersService: BannersService,
+    private readonly uploadService: UploadService // ImgBB xizmati
+  ) {}
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('image', {
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, `banner-${uniqueSuffix}${extname(file.originalname)}`);
-      },
-    }),
+    storage: memoryStorage(),
     fileFilter: (req, file, cb) => {
-       // GIF FORMATI QO'SHILDI
-       if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
-           return cb(new BadRequestException('Faqat rasm (jpg, png, gif, webp) mumkin!'), false);
-       }
-       cb(null, true);
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|gif|webp)$/)) {
+        return cb(new BadRequestException('Faqat rasm (jpg, png, gif, webp) mumkin!'), false);
+      }
+      cb(null, true);
     }
   }))
-  create(@UploadedFile() file: Express.Multer.File, @Body() dto: CreateBannerDto) {
+  async create(@UploadedFile() file: Express.Multer.File, @Body() dto: any) {
     if (!file) throw new BadRequestException('Rasm yuklanmadi!');
     
-    const imagePath = `/uploads/${file.filename}`;
+    // ImgBB ga yuklash
+    const result = await this.uploadService.uploadFile(file);
+    const imagePath = result.secure_url;
     
-    return this.bannersService.create({
-      ...dto,
-      isActive: dto.isActive === 'true', // Stringni booleanga o'giramiz
-    }, imagePath);
+    return this.bannersService.create(dto, imagePath);
   }
 
   @Get()

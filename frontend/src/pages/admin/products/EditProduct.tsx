@@ -7,6 +7,7 @@ import {
   ChevronDown, DollarSign, Clock, Percent, ArrowLeft, Loader2
 } from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
+import { getImageUrl } from '../../../utils/image'; // 1. IMPORT QO'SHILDI
 
 const CONSTANTS = {
   screens: [
@@ -247,7 +248,10 @@ export default function EditProduct() {
     ];
     formData.append('colors', JSON.stringify(finalColors));
     
+    // Qaysi rasmlar qolishi kerakligini jo'natamiz
     formData.append('existingImages', JSON.stringify(existingImages.map(img => img.url)));
+    
+    // Yangi qo'shilgan fayllarni jo'natamiz
     newImages.forEach(img => formData.append('images', img.file));
 
     try {
@@ -282,7 +286,7 @@ export default function EditProduct() {
              <button onClick={() => navigate(-1)} className="p-2 bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition">
                <ArrowLeft size={24}/>
              </button>
-             {t('edit_product_title')}<span className="text-emerald-600 truncate max-w-[200px] md:max-w-md">{basic.name}</span>
+             {t('edit_product_title')}<span className="text-emerald-600 truncate max-w-[150px] md:max-w-md">{basic.name}</span>
           </h1>
       </div>
 
@@ -364,9 +368,10 @@ export default function EditProduct() {
             </h2>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {/* 2. ESKI RASMLAR (getImageUrl ishlatildi) */}
                 {existingImages.map((img, idx) => (
                     <div key={`old-${idx}`} className="relative group bg-gray-50 dark:bg-black rounded-2xl p-2 border border-gray-200 dark:border-gray-800">
-                        <img src={img.url} className="w-full h-32 object-contain rounded-xl bg-white dark:bg-gray-900 mb-2" />
+                        <img src={getImageUrl(img.url)} className="w-full h-32 object-contain rounded-xl bg-white dark:bg-gray-900 mb-2" />
                         <button onClick={() => removeExistingImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition transform hover:scale-110"><X size={14}/></button>
                         <div className="flex items-center gap-2">
                             <input type="color" value={img.color} onChange={e => updateExistingImageColor(idx, e.target.value)} className="w-8 h-8 rounded-full cursor-pointer border-2 border-white dark:border-gray-700 shadow-sm p-0 overflow-hidden" />
@@ -375,6 +380,7 @@ export default function EditProduct() {
                     </div>
                 ))}
 
+                {/* YANGI QO'SHILAYOTGAN RASMLAR */}
                 {newImages.map((img, idx) => (
                     <div key={`new-${idx}`} className="relative group bg-gray-50 dark:bg-black rounded-2xl p-2 border border-emerald-400 dark:border-emerald-700">
                         <img src={img.preview} className="w-full h-32 object-contain rounded-xl bg-white dark:bg-gray-900 mb-2" />
@@ -419,8 +425,8 @@ export default function EditProduct() {
                     <label className="spec-label mb-3"><Globe size={14}/> {t('os_label')}</label>
                     <div className="flex gap-4">
                         <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl">
-                            <button onClick={() => setSpecs({...specs, osType: 'Android'})} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${specs.osType === 'Android' ? 'bg-white dark:bg-gray-800 shadow text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>Android</button>
-                            <button onClick={() => setSpecs({...specs, osType: 'iOS'})} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${specs.osType === 'iOS' ? 'bg-white dark:bg-gray-800 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>iOS</button>
+                            <button type="button" onClick={() => setSpecs({...specs, osType: 'Android'})} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${specs.osType === 'Android' ? 'bg-white dark:bg-gray-800 shadow text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>Android</button>
+                            <button type="button" onClick={() => setSpecs({...specs, osType: 'iOS'})} className={`px-4 py-2 rounded-lg text-sm font-bold transition ${specs.osType === 'iOS' ? 'bg-white dark:bg-gray-800 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>iOS</button>
                         </div>
                         <div className="flex-1">
                             <input list="os-list" className="input-std" value={specs.osVer} onChange={e => setSpecs({...specs, osVer: e.target.value})} />

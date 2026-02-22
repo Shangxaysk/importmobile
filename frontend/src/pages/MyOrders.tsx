@@ -4,7 +4,8 @@ import axios from 'axios';
 import { 
   ChevronLeft, Package, Clock, MessageCircle, ChevronDown, ChevronUp 
 } from 'lucide-react';
-import { useLanguage } from '../context/LanguageContext'; // QO'SHILDI
+import { useLanguage } from '../context/LanguageContext';
+import { getImageUrl } from '../utils/image'; // 1. IMPORT QO'SHILDI
 
 // --- FONT STILI ---
 const fontStyle = `
@@ -18,7 +19,7 @@ export default function MyOrders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedChat, setExpandedChat] = useState<string | null>(null);
-  const { t } = useLanguage(); // QO'SHILDI
+  const { t } = useLanguage();
 
   const fetchOrders = async () => {
     try {
@@ -43,14 +44,13 @@ export default function MyOrders() {
     try {
       const token = localStorage.getItem('token');
       const encodedId = encodeURIComponent(orderId);
-     await axios.patch(`${import.meta.env.VITE_API_URL}/orders/${encodedId}/read`, {}, {
-    headers: { Authorization: `Bearer ${token}` }
-});
+      await axios.patch(`${import.meta.env.VITE_API_URL}/orders/${encodedId}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, isMessageRead: true } : o));
     } catch (e) {}
   };
 
-  // --- XAVFSIZ PARSE FUNKSIYASI ---
   const parseMessages = (msgStr: any) => {
     if (!msgStr) return []; 
     try {
@@ -128,7 +128,8 @@ export default function MyOrders() {
                         {order.items?.map((item: any, idx: number) => (
                             <div key={idx} className="flex gap-4 items-center">
                                 <div className="w-14 h-14 bg-gray-50 dark:bg-gray-900 rounded-2xl flex-shrink-0 p-2 border border-gray-100 dark:border-gray-800">
-                                    <img src={item.product?.images?.[0]} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal" />
+                                    {/* 2. MAHSULOT RASMI TO'G'IRLANDI */}
+                                    <img src={getImageUrl(item.product?.images?.[0])} className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal" alt={item.product?.name} />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{item.product?.name}</h3>
@@ -138,7 +139,7 @@ export default function MyOrders() {
                         ))}
                     </div>
 
-                    {/* --- ADMIN XABARLARI (Timeline/Chat uslubida) --- */}
+                    {/* ADMIN XABARLARI */}
                     {messages.length > 0 && (
                         <div 
                           className={`mb-6 rounded-[28px] overflow-hidden border transition-all duration-500 ${
@@ -160,10 +161,9 @@ export default function MyOrders() {
                                     </div>
                                     <div className="flex-1">
                                         <p className={`text-[10px] font-black uppercase tracking-widest ${isNewMessage ? 'text-white/80' : 'text-emerald-500/80'}`}>
-                                            ImportMobile Update {messages.length > 1 && `(${messages.length})`}
+                                           ImportMobile Update {messages.length > 1 && `(${messages.length})`}
                                         </p>
                                         <p className={`text-xs font-bold line-clamp-1 ${isNewMessage ? 'text-white' : 'text-gray-700 dark:text-gray-200'}`}>
-                                            {/* XAVFSIZ REPLACE AMALI */}
                                             {String(messages[0].text || '').replace('#IMPRT', '')}
                                         </p>
                                     </div>

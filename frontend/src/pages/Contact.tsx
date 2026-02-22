@@ -7,12 +7,12 @@ import {
   PackageSearch, CheckCircle2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/LanguageContext'; // QO'SHILDI
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Contact() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { t } = useLanguage(); // QO'SHILDI
+  const { t } = useLanguage();
   const isAdmin = user?.role === 'ADMIN';
 
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,7 @@ export default function Contact() {
   const [requestFile, setRequestFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  // 2. ALOQA MA'LUMOTLARI (Bazadan keladi)
+  // 2. ALOQA MA'LUMOTLARI
   const [contactInfo, setContactInfo] = useState({
     phone: '',
     telegram: '',
@@ -33,7 +33,6 @@ export default function Contact() {
   const [isEditingInfo, setIsEditingInfo] = useState(false);
   const [savingInfo, setSavingInfo] = useState(false);
 
-  // --- BAZADAN MA'LUMOTLARNI YUKLASH ---
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchSettings = async () => {
@@ -41,10 +40,10 @@ export default function Contact() {
             const res = await axios.get(import.meta.env.VITE_API_URL + '/contact/settings');
             if (res.data) {
                 setContactInfo({
-                    phone: res.data.phone,
-                    telegram: res.data.telegram,
-                    email: res.data.email,
-                    address: res.data.address,
+                    phone: res.data.phone || '',
+                    telegram: res.data.telegram || '',
+                    email: res.data.email || '',
+                    address: res.data.address || '',
                 });
             }
         } catch (err) {
@@ -59,11 +58,12 @@ export default function Contact() {
     if (file) {
       if (file.size > 5 * 1024 * 1024) return alert(t('file_size_error'));
       setRequestFile(file);
+      // Mahalliy preview yaratish (ImgBB ga ketishidan oldin)
       setPreview(URL.createObjectURL(file));
     }
   };
 
-  // --- MAHSULOT QIDIRUVINI YUBORISH (Topic 5) ---
+  // --- MAHSULOT QIDIRUVINI YUBORISH ---
   const handleRequestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!requestMsg.trim() && !requestFile) return;
@@ -73,7 +73,7 @@ export default function Contact() {
 
     const formData = new FormData();
     formData.append('message', requestMsg); 
-    if (requestFile) formData.append('file', requestFile);
+    if (requestFile) formData.append('image', requestFile); // 'file' emas 'image' qildik (Backenddagi interceptorga mos)
 
     try {
       await axios.post(import.meta.env.VITE_API_URL + '/contact/product-search', formData, {
@@ -90,7 +90,6 @@ export default function Contact() {
     }
   };
 
-  // --- ADMIN: ALOQA MA'LUMOTLARINI SAQLASH ---
   const handleSaveContactInfo = async () => {
     setSavingInfo(true);
     try {
@@ -114,7 +113,6 @@ export default function Contact() {
       {/* --- HEADER --- */}
       <div className="sticky top-0 z-40 w-full bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
         <div className="relative max-w-md mx-auto h-[60px] px-4 flex items-center">
-            
             <button 
                 onClick={() => navigate(-1)} 
                 className="group flex items-center gap-1 pl-2 pr-4 py-2 bg-emerald-600 rounded-full text-white active:scale-95 hover:bg-emerald-700 transition-all duration-300 z-10"
@@ -122,8 +120,7 @@ export default function Contact() {
                 <ChevronLeft size={18} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" />
                 <span className="text-xs tracking-wide font-medium">{t('back')}</span>
             </button>
-
-            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-black text-gray-900 dark:text-white">
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
                 {t('contact_us')}
             </h1>
         </div>
@@ -159,7 +156,7 @@ export default function Contact() {
                     <div className="flex-1">
                         {preview ? (
                             <div className="relative w-full h-[140px] rounded-3xl border border-gray-100 dark:border-gray-800 overflow-hidden group shadow-lg">
-                                <img src={preview} className="w-full h-full object-cover" />
+                                <img src={preview} className="w-full h-full object-cover" alt="Preview" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center backdrop-blur-sm">
                                     <button type="button" onClick={() => { setRequestFile(null); setPreview(null); }} className="bg-red-500 text-white p-3 rounded-full shadow-xl transform hover:scale-110 active:scale-90 transition-all"><X size={20}/></button>
                                 </div>
@@ -177,9 +174,9 @@ export default function Contact() {
                         <button 
                             type="submit" 
                             disabled={loading || (!requestMsg.trim() && !requestFile)}
-                            className="w-full h-[64px] bg-emerald-600 text-white rounded-[24px] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 active:scale-95 shadow-xl shadow-emerald-600/20 transition-all disabled:opacity-50 disabled:grayscale"
+                            className="w-full h-[64px] bg-emerald-600 text-white rounded-[24px] font-black text-sm uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 active:scale-95 shadow-xl shadow-emerald-600/20 transition-all disabled:opacity-50"
                         >
-                            {loading ? <div className="w-6 h-6 border-3 border-white border-t-transparent rounded-full animate-spin"></div> : <><Send size={20} /> {t('send')}</>}
+                            {loading ? <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <><Send size={20} /> {t('send')}</>}
                         </button>
                     </div>
                 </div>
@@ -215,7 +212,6 @@ export default function Contact() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-5">
-                {/* Telefon */}
                 <div className="contact-card">
                     <div className="contact-icon text-emerald-600"><Phone size={20}/></div>
                     <div className="w-full">
@@ -228,7 +224,6 @@ export default function Contact() {
                     </div>
                 </div>
 
-                {/* Telegram */}
                 <div className="contact-card">
                     <div className="contact-icon text-blue-500"><MessageCircle size={20}/></div>
                     <div className="w-full">
@@ -241,7 +236,6 @@ export default function Contact() {
                     </div>
                 </div>
 
-                {/* Email */}
                 <div className="contact-card">
                     <div className="contact-icon text-orange-500"><Mail size={20}/></div>
                     <div className="w-full">
@@ -254,7 +248,6 @@ export default function Contact() {
                     </div>
                 </div>
 
-                {/* Manzil */}
                 <div className="contact-card">
                     <div className="contact-icon text-red-500"><MapPin size={20}/></div>
                     <div className="w-full">
@@ -274,7 +267,7 @@ export default function Contact() {
       <style>{`
         .contact-card { display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem; background: #f8fafc; border-radius: 1.5rem; border: 1px solid #f1f5f9; transition: all 0.3s; }
         .dark .contact-card { background: #000; border-color: #1f2937; }
-        .contact-icon { padding: 0.75rem; background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); }
+        .contact-icon { padding: 0.75rem; background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05); display: flex; align-items: center; justify-content: center; }
         .dark .contact-icon { background: #111; box-shadow: none; }
         .contact-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
         .contact-value { font-size: 0.875rem; font-weight: 700; color: #0f172a; }

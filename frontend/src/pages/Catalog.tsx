@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Loader2, ArrowLeft, ChevronLeft } from 'lucide-react';
+import { ChevronRight, Loader2, Folder, ChevronLeft } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
 import { useLanguage } from '../context/LanguageContext';
+import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
 
-// --- FONT STILI (Cart.tsx dan olib qo'shdik) ---
+// --- FONT STILI ---
 const fontStyle = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
   .font-inter { font-family: 'Inter', sans-serif; }
@@ -49,7 +50,8 @@ export default function Catalog() {
 
   const renderIcon = (cat: any) => {
     if (cat.image) {
-        return <img src={cat.image} className="w-full h-full object-contain brightness-0 invert" alt={language === 'ru' ? cat.nameRu : cat.nameUz} />; 
+        // TO'G'IRLANDI: brightness-0 invert olib tashlandi, getImageUrl qo'shildi
+        return <img src={getImageUrl(cat.image)} className="w-full h-full object-contain p-1" alt={language === 'ru' ? cat.nameRu : cat.nameUz} />; 
     }
     const IconComponent = (LucideIcons as any)[cat.icon] || LucideIcons.Folder;
     return <IconComponent size={24} strokeWidth={2} />;
@@ -61,7 +63,7 @@ export default function Catalog() {
   };
 
   if (loading) return (
-    <div className="flex justify-center items-center h-full bg-white dark:bg-black text-blue-600">
+    <div className="flex justify-center items-center h-full min-h-[400px] bg-white dark:bg-black text-emerald-600">
         <Loader2 className="animate-spin" size={40} />
     </div>
   );
@@ -72,7 +74,7 @@ export default function Catalog() {
     <div className="min-h-full bg-white dark:bg-black font-inter transition-colors duration-300">
       <style>{fontStyle}</style>
       
-      {/* --- HEADER (CART BILAN BIR XIL) --- */}
+      {/* --- HEADER --- */}
       <div className="sticky top-0 z-40 w-full bg-white/80 dark:bg-black/80 backdrop-blur-2xl border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
         <div className="relative max-w-md mx-auto h-[60px] px-4 flex items-center">
             
@@ -105,17 +107,17 @@ export default function Catalog() {
                                 index !== filteredCategories.length - 1 ? 'border-b border-gray-100 dark:border-gray-900' : ''
                             }`}
                         >
-                            <div className={`w-12 h-12 flex-shrink-0 ${bgColor} rounded-2xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                            <div className={`w-12 h-12 flex-shrink-0 ${bgColor} rounded-2xl flex items-center justify-center text-white shadow-md group-hover:scale-110 transition-transform duration-300 overflow-hidden`}>
                                 {renderIcon(cat)}
                             </div>
 
                             <div className="flex-1 ml-4">
-                                <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-blue-600 transition-colors">
+                                <h3 className="text-base font-bold text-gray-900 dark:text-white leading-tight group-hover:text-emerald-600 transition-colors">
                                     {language === 'ru' ? (cat.nameRu || cat.nameUz) : cat.nameUz}
                                 </h3>
                             </div>
 
-                            <div className="text-gray-300 dark:text-gray-700 group-hover:text-blue-500 group-hover:translate-x-1 transition-all">
+                            <div className="text-gray-300 dark:text-gray-700 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all">
                                 <ChevronRight size={20} strokeWidth={2.5} />
                             </div>
                         </Link>
@@ -124,6 +126,7 @@ export default function Catalog() {
             </div>
         ) : (
             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                <Folder size={48} className="mb-4 opacity-20" />
                 <p className="font-medium">{t('categories_not_found')}</p>
             </div>
         )}

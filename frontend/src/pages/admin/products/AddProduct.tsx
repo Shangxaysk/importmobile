@@ -7,6 +7,7 @@ import {
   ChevronDown, DollarSign, Clock, Percent, Loader2 
 } from 'lucide-react';
 import { useLanguage } from '../../../context/LanguageContext';
+import { getImageUrl } from '../../../utils/image'; // Markaziy funksiyani import qildik
 
 const CONSTANTS = {
   screens: [
@@ -54,7 +55,8 @@ export default function AddProduct() {
   const [variants, setVariants] = useState<{ram: string, rom: string, price: string}[]>([]);
   const [tempVar, setTempVar] = useState({ ram: '', rom: '', price: '' });
 
-  const [images, setImages] = useState<{file: File, preview: string, color: string}[]>([]);
+  // Rasmlar uchun yangilangan mantiq: preview URL yoki File obyekti
+  const [images, setImages] = useState<{file: File | null, preview: string, color: string}[]>([]);
 
   const [specs, setSpecs] = useState({
     screen: '',
@@ -102,7 +104,7 @@ export default function AddProduct() {
       }
       const newImages = files.map(file => ({
         file,
-        preview: URL.createObjectURL(file),
+        preview: URL.createObjectURL(file), // Foydalanuvchi tanlagan rasm previewsi
         color: '#10b981' 
       }));
       setImages([...images, ...newImages]);
@@ -166,7 +168,11 @@ export default function AddProduct() {
 
     const imageColors = images.map(img => img.color);
     formData.append('colors', JSON.stringify(imageColors));
-    images.forEach(img => formData.append('images', img.file));
+    
+    // Backenddagi ImgBB mantiqiga mos ravishda rasmlarni jo'natish
+    images.forEach(img => {
+        if (img.file) formData.append('images', img.file);
+    });
 
     try {
       const token = localStorage.getItem('token');
@@ -188,14 +194,12 @@ export default function AddProduct() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-black font-inter pb-32 p-6 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-      
       <div className="flex items-center justify-between mb-8 max-w-5xl mx-auto">
           <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{t('add_product_title')}</h1>
           <button onClick={() => navigate(-1)} className="text-sm font-bold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition">{t('cancel')}</button>
       </div>
 
       <div className="space-y-6 max-w-5xl mx-auto">
-        
         {/* 1. ASOSIY MA'LUMOTLAR */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-gray-800 transition-colors">
             <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
@@ -279,7 +283,8 @@ export default function AddProduct() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {images.map((img, idx) => (
                     <div key={idx} className="relative group bg-gray-50 dark:bg-black rounded-2xl p-2 border border-gray-200 dark:border-gray-800">
-                        <img src={img.preview} className="w-full h-32 object-contain rounded-xl bg-white dark:bg-gray-900 mb-2" />
+                        {/* TO'G'IRLANDI: getImageUrl bilan URL ni to'g'ri ko'rsatish */}
+                        <img src={getImageUrl(img.preview)} className="w-full h-32 object-contain rounded-xl bg-white dark:bg-gray-900 mb-2" alt={`Preview ${idx}`} />
                         <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition transform hover:scale-110"><X size={14}/></button>
                         
                         <div className="flex items-center gap-2">
@@ -308,7 +313,6 @@ export default function AddProduct() {
              </h2>
              
              <div className="grid md:grid-cols-2 gap-x-8 gap-y-6">
-                 
                  <div>
                     <label className="spec-label"><Layers size={14}/> {t('screen_type')}</label>
                     <input list="screen-list" className="input-std bg-white dark:bg-black" placeholder={t('select_or_type')} 
@@ -329,9 +333,9 @@ export default function AddProduct() {
                     <label className="spec-label mb-3"><Globe size={14}/> {t('os_label')}</label>
                     <div className="flex gap-4">
                         <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl">
-                            <button onClick={() => setSpecs({...specs, osType: 'Android'})} 
+                            <button type="button" onClick={() => setSpecs({...specs, osType: 'Android'})} 
                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition ${specs.osType === 'Android' ? 'bg-white dark:bg-gray-800 shadow text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>Android</button>
-                            <button onClick={() => setSpecs({...specs, osType: 'iOS'})} 
+                            <button type="button" onClick={() => setSpecs({...specs, osType: 'iOS'})} 
                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition ${specs.osType === 'iOS' ? 'bg-white dark:bg-gray-800 shadow text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>iOS</button>
                         </div>
                         <div className="flex-1">

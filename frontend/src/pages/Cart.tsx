@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, ArrowLeft, Check, X, ChevronLeft } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, Check, ChevronLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
 
 // --- FONT STILI ---
 const fontStyle = `
@@ -41,9 +42,6 @@ export default function Cart() {
   };
 
   return (
-    // ASOSIY O'ZGARISH: min-h-full (h-screen emas) va pb-[200px] (footer uchun joy)
-    // Bu sahifa App.tsx dagi 'overflow-y-auto' konteyner ichida render bo'ladi.
-    // Shuning uchun o'ziga alohida skrol kerak emas.
     <div className="min-h-full bg-white dark:bg-black text-gray-900 dark:text-gray-100 font-inter transition-colors duration-300 relative pb-[200px]">
       <style>{fontStyle}</style>
 
@@ -107,8 +105,9 @@ export default function Cart() {
                             onClick={() => goToProduct(item.id)}
                             className="cursor-pointer w-24 h-24 sm:w-28 sm:h-28 bg-gray-50 dark:bg-gray-900 rounded-2xl flex-shrink-0 p-3 flex items-center justify-center relative overflow-hidden border border-gray-100 dark:border-gray-800"
                           >
+                             {/* TO'G'IRLANDI */}
                              <img 
-                               src={item.image || '/placeholder.png'} 
+                               src={getImageUrl(item.image)} 
                                alt={item.name} 
                                className="w-full h-full object-contain mix-blend-multiply dark:mix-blend-normal hover:scale-105 transition-transform duration-300" 
                              />
@@ -170,7 +169,6 @@ export default function Cart() {
             
             <div className="max-w-3xl mx-auto px-5 py-4">
                 <div className="flex flex-col gap-4">
-                    {/* Jami narx (Dinamik tarjima) */}
                     <div className="flex justify-between items-center text-sm">
                         <span className="text-black dark:text-white font-medium">
                             {t('total_with_count').replace('{{count}}', selectedIds.length.toString())}
@@ -196,7 +194,7 @@ export default function Cart() {
                 {/* iPhone Safe Area */}
                 <div className="h-[env(safe-area-inset-bottom)]"></div>
             </div>
-         </div>
+          </div>
       )}
     </div>
   );
