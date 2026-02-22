@@ -1,29 +1,33 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
-import * as streamifier from 'streamifier';
+import axios from 'axios';
 
 @Injectable()
 export class UploadService {
-  constructor() {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
-  }
+  async uploadFile(file: Express.Multer.File): Promise<any> {
+    const apiKey = process.env.IMGBB_API_KEY;
+    
+    // Rasmni base64 formatiga o'tkazamiz
+    const base64Image = file.buffer.toString('base64');
 
-  // Promise qaytaradigan tipni aniqlashtirdik
-  uploadFile(file: Express.Multer.File): Promise<UploadApiResponse | UploadApiErrorResponse> {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'importmobile' },
-        (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Cloudinary result is undefined'));
-          resolve(result); // Endi qizil bo'lmaydi
+    // ImgBB base64 ma'lumotni URLSearchParams orqali ham qabul qiladi
+    const params = new URLSearchParams();
+    params.append('image', base64Image);
+
+    try {
+      const response = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${apiKey}`,
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
         },
       );
-      streamifier.createReadStream(file.buffer).pipe(uploadStream);
-    });
+
+      return { secure_url: response.data.data.url };
+    } catch (error: any) {
+      console.error('ImgBB error:', error.response?.data || error.message);
+      throw new Error('Rasm yuklanmadi');
+    }
   }
 }
