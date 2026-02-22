@@ -4,12 +4,13 @@ import { CategoriesController } from './categories.controller';
 import { AuthModule } from '../auth/auth.module';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'prisma/prisma.service';
+import { UploadService } from '../upload/upload.service';
 
 @Module({
   imports: [
     AuthModule // <--- 2. BU YERGA QO'SHING
   ],
   controllers: [CategoriesController],
-  providers: [CategoriesService, PrismaService],
+  providers: [CategoriesService, PrismaService, UploadService],
 })
 export class CategoriesModule {}
