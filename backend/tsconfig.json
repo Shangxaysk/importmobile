@@ -17,8 +17,12 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["node"] 
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "prisma/seed.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

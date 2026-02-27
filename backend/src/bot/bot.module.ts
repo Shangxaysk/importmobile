@@ -2,7 +2,8 @@ import { Module, forwardRef } from '@nestjs/common';
 import { BotService } from './bot.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrdersModule } from '../orders/orders.module'; 
-import { ConfigModule } from '@nestjs/config'; // <--- BU QO'SHILDI
+import { ConfigModule } from '@nestjs/config';
+import { UploadModule } from '../upload/upload.module'; // <--- 1. SHU QATOR QO'SHILDI
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ConfigModule } from '@nestjs/config'; // <--- BU QO'SHILDI
     forwardRef(() => OrdersModule),
     // ConfigService ishlashi uchun:
     ConfigModule, 
+    UploadModule, // <--- 2. SHU YERGA QO'SHILDI
   ],
   providers: [
     BotService, 

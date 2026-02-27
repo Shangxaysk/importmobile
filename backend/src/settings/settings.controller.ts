@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
 import { SettingsService } from './settings.service';
-import { RolesGuard } from '../auth/roles.guard'; // Sizdagi Guard nomi
+import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('settings')
 export class SettingsController {
@@ -12,7 +12,7 @@ export class SettingsController {
   }
 
   @Post('contact')
-  @UseGuards(RolesGuard) // Faqat login qilganlar (Admin) uchun
+  @UseGuards(RolesGuard)
   updateContact(@Body() dto: any) {
     return this.settingsService.updateContactSettings(dto);
   }

@@ -5,12 +5,25 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Bazaga ma\'lumot ekish boshlandi...');
 
-  // 1. Kataloglarni yaratamiz
+  // 1. GLOBAL SOZLAMALARNI YARATISH (Yoki yangilash)
+  // upsert - bu agar ma'lumot bo'lsa yangilaydi, yo'q bo'lsa yaratadi
+  await prisma.globalSettings.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      id: 1,
+      isOrdersEnabled: true,
+      telegramLink: 'https://t.me/importmobile_uz',
+    },
+  });
+  console.log('⚙️ Global sozlamalar tayyorlandi.');
+
+  // 2. Kataloglarni yaratamiz
   const smartphoneCategory = await prisma.category.create({
     data: {
       nameUz: 'Smartfonlar',
       nameRu: 'Смартфоны',
-      hasSpecs: true, // Bu katalogda texnik xususiyatlar bor
+      hasSpecs: true,
       image: 'https://cdn-icons-png.flaticon.com/512/644/644458.png',
     },
   });
@@ -24,27 +37,26 @@ async function main() {
     },
   });
 
-  // 2. Mahsulot yaratamiz (iPhone 15 Pro)
+  // 3. Mahsulot yaratamiz
   await prisma.product.create({
     data: {
       name: 'iPhone 15 Pro Max',
       description: 'Titan korpus, A17 Pro chip, eng kuchli kamera.',
-      price: 16250000, // So'mda
-      originalPrice: 16500000,
+      price: 1200, // Dollarda (frontedda $ ko'rsatayotganingiz uchun)
+      deliveryTime: '15-20',
+      prepaymentPercent: 100,
+      isActive: true, // Yangi qo'shilgan maydon
       images: [
         'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-max-natural-titanium-select-202309',
-        'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-max-blue-titanium-select-202309'
       ],
-      categoryId: smartphoneCategory.id,
-      isAvailable: true,
-      // JSON formatdagi xususiyatlar
       specifications: {
         screen: "6.7 inch OLED",
-        cpu: "A17 Pro",
-        ram: "8GB",
-        storage: "256GB",
+        chipset: "A17 Pro",
         battery: "4422 mAh",
         sim: "eSIM + Nano SIM"
+      },
+      category: {
+        connect: { id: smartphoneCategory.id }
       }
     },
   });
@@ -54,7 +66,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seed xatosi:', e);
     process.exit(1);
   })
   .finally(async () => {

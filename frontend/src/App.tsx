@@ -71,7 +71,7 @@ function App() {
   const isLogin = location.pathname === '/login';
 
   const showHeader = !isAdmin && !isProductDetail && !isCart && !isCheckout && !isCatalog && !isAccount && !isFavorites && !isSuggestions && !isMyOrders && !isConract && !isLogin;
-  const showNavbar = !isAdmin && !isProductDetail && !isCheckout && !isSuggestions && !isFavorites && !isMyOrders && !isConract && !isLogin;
+  const showNavbar = !isAdmin && !isProductDetail && !isCheckout && !isSuggestions && !isFavorites && !isMyOrders && !isConract && !isLogin && !isCart && !isCatalog;
 
   const navLinks = [
     { path: '/', icon: <Smartphone size={24} strokeWidth={2} />, label: t('home') },
@@ -86,8 +86,7 @@ function App() {
   ];
 
   return (
-    <div className="h-screen w-full bg-white dark:bg-black font-inter text-gray-900 dark:text-gray-100 flex flex-col overflow-hidden transition-colors duration-300">
-        <style>{fontStyle}</style>
+<div className="h-[100dvh] w-full bg-white dark:bg-black font-inter text-gray-900 dark:text-gray-100 flex flex-col overflow-hidden transition-colors duration-300">        <style>{fontStyle}</style>
 
         {/* --- 1. TEPADAGI ASOSIY HEADER --- */}
         {showHeader && (

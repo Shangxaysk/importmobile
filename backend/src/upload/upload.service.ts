@@ -1,33 +1,45 @@
 import { Injectable } from '@nestjs/common';
-import axios from 'axios';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UploadService {
-  async uploadFile(file: Express.Multer.File): Promise<any> {
-    const apiKey = process.env.IMGBB_API_KEY;
-    
-    // Rasmni base64 formatiga o'tkazamiz
-    const base64Image = file.buffer.toString('base64');
+  private s3Client: S3Client;
 
-    // ImgBB base64 ma'lumotni URLSearchParams orqali ham qabul qiladi
-    const params = new URLSearchParams();
-    params.append('image', base64Image);
+  constructor(private readonly configService: ConfigService) {
+    // Agar bu yerda qizil bo'lsa, ConfigService importini tekshiring
+    this.s3Client = new S3Client({
+      region: this.configService.get<string>('AWS_REGION') || 'us-east-1',
+      credentials: {
+        accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID') || '',
+        secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY') || '',
+      },
+      endpoint: this.configService.get<string>('AWS_ENDPOINT'),
+      forcePathStyle: true,
+    });
+  }
+
+  async uploadFile(file: any): Promise<{ secure_url: string }> {
+    const bucket = this.configService.get<string>('AWS_S3_BUCKET_NAME') || '';
+    const fileKey = `uploads/${Date.now()}-${file.originalname?.replace(/\s/g, '_') || 'file.jpg'}`;
 
     try {
-      const response = await axios.post(
-        `https://api.imgbb.com/1/upload?key=${apiKey}`,
-        params,
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
-        },
-      );
+      const command = new PutObjectCommand({
+        Bucket: bucket,
+        Key: fileKey,
+        Body: file.buffer,
+        ContentType: file.mimetype || 'image/jpeg',
+      });
 
-      return { secure_url: response.data.data.url };
-    } catch (error: any) {
-      console.error('ImgBB error:', error.response?.data || error.message);
-      throw new Error('Rasm yuklanmadi');
+      await this.s3Client.send(command);
+      
+      const endpoint = (this.configService.get<string>('AWS_ENDPOINT') || '').replace(/\/$/, '');
+      const url = `${endpoint}/${bucket}/${fileKey}`;
+
+      return { secure_url: url };
+    } catch (error) {
+      console.error('S3 Upload Error:', error);
+      throw new Error('Rasm S3 ga yuklanmadi');
     }
   }
 }

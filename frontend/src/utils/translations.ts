@@ -59,6 +59,10 @@ export const translations = {
     agree: "Roziman",
     fill_required_fields: "Iltimos, barcha majburiy maydonlarni to'ldiring va chekni yuklang!",
     login_required: "Siz tizimga kirmagansiz! Iltimos, avval Login qiling.",
+    service_paused: "Xizmat vaqtincha to'xtatilgan",
+    default_rest_message: "Hozircha buyurtmalar qabul qilinmaydi. Iltimos, yangiliklarni kanalimizda kuzatib boring.",
+    telegram_channel: "Telegram Kanalimiz",
+    close_btn: "Yopish",
 
     // === CONTACT PAGE ===
     contact_us: "Biz bilan aloqa",
@@ -217,6 +221,11 @@ export const translations = {
     th_price: "Narxi",
     th_category: "Kategoriya",
     category_standard: "Standart",
+    status_active: "Faol",
+    status_inactive: "Yashirilgan",
+    hide_product: "Mahsulotni yashirish",
+    show_product: "Mahsulotni ko'rsatish",
+    error_occurred: "Xatolik yuz berdi!",
 
     // === ADD/EDIT PRODUCT ===
     add_product_title: "Mahsulot Qo'shish",
@@ -295,7 +304,6 @@ export const translations = {
     reject_wrong_img: "Xato rasm",
     reject_wrong_img_desc: "Adashib boshqa rasm yuklangan",
     reject_other_placeholder: "Boshqa sabab bo'lsa kiriting...",
-    close_btn: "Yopish",
     msg_sent_success: "Xabar mijozga yuborildi!",
     msg_sent_error: "Xabar yuborilmadi",
 
@@ -377,6 +385,18 @@ export const translations = {
     save_settings: "Sozlamalarni Saqlash",
     settings_saved: "Sozlamalar muvaffaqiyatli saqlandi!",
     admin_card_hint: "Mijozlar to'lov paytida ushbu kartani ko'rishadi.",
+    system_status_saved: "Tizim holati muvaffaqiyatli saqlandi!",
+    system_status: "Tizim Holati",
+    site_active_orders_open: "Sayt faol, buyurtmalar ochiq",
+    site_in_rest_mode: "Sayt dam olish rejimida",
+    rest_mode_warning: "Agar o'chirib qo'ysangiz, mijozlar savatchadan buyurtma bera olmaydilar.",
+    message_uz: "Xabar (O'zbek tilida)",
+    message_uz_placeholder: "Masalan: Hozircha buyurtmalar qabul qilinmaydi...",
+    message_ru: "Xabar (Rus tilida)",
+    message_ru_placeholder: "Masalan: Hozircha buyurtmalar qabul qilinmaydi...",
+    save_system_settings: "Tizim sozlamasini saqlash",
+    save_card_settings: "Karta sozlamasini saqlash",
+    card_preview: "Karta ko'rinishi",
   },
 
 
@@ -456,6 +476,10 @@ export const translations = {
     agree: "Согласен",
     fill_required_fields: "Пожалуйста, заполните все обязательные поля и загрузите чек!",
     login_required: "Вы не вошли в систему! Пожалуйста, сначала авторизуйтесь.",
+    service_paused: "Обслуживание временно приостановлено",
+    default_rest_message: "В настоящее время заказы не принимаются. Пожалуйста, следите за новостями в нашем канале.",
+    telegram_channel: "Наш Telegram канал",
+
 
     // === CONTACT PAGE ===
     contact_us: "Связаться с нами",
@@ -614,6 +638,10 @@ export const translations = {
     th_price: "Цена",
     th_category: "Категория",
     category_standard: "Стандарт",
+    status_inactive: "Неактивный",
+    hide_product: "Скрыть товар",
+    show_product: "Показать товар",
+    error_occurred: "Произошла ошибка!",
 
     // === ADD/EDIT PRODUCT ===
     add_product_title: "Добавить Товар",
@@ -773,7 +801,19 @@ export const translations = {
     save_settings: "Сохранить Настройки",
     settings_saved: "Настройки успешно сохранены!",
     admin_card_hint: "Клиенты увидят эту карту при оплате.",
-  }
+    system_status_saved: "Статус системы успешно сохранен!",
+    system_status: "Статус системы",
+    site_active_orders_open: "Сайт активен, заказы открыты",
+    site_in_rest_mode: "Сайт находится в режиме отдыха",
+    rest_mode_warning: "Если вы отключите режим отдыха, клиенты не смогут делать заказы из корзины.",
+    message_uz: "Xabar ( на узбекском языке)",
+    message_uz_placeholder: "Например: В настоящее время заказы не принимаются...",
+    message_ru: "Xabar (на русском языке)",
+    message_ru_placeholder: "Например: В настоящее время заказы не принимаются...",
+    save_system_settings: "Сохранить системные настройки",
+    save_card_settings: "Сохранить настройки карты",
+    card_preview: "Предпросмотр карты",
+  },
 };
 
 export type Language = 'uz' | 'ru';

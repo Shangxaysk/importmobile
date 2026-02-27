@@ -63,6 +63,9 @@ export default function CategoryPage() {
 
   if (!category) return <div className="text-center mt-20 font-inter dark:text-white">{t('category_not_found')}</div>;
 
+  // YANGI QO'SHILGAN QISMI: Faqatgina yashirilmagan (isActive !== false) mahsulotlarni ajratib olamiz
+  const activeProducts = category.products?.filter((p: any) => p.isActive !== false) || [];
+
   return (
     <div className="min-h-full bg-white dark:bg-black font-inter transition-colors duration-300">
       <style>{fontStyle}</style>
@@ -86,9 +89,9 @@ export default function CategoryPage() {
 
       {/* --- MAHSULOTLAR RO'YXATI --- */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {category.products && category.products.length > 0 ? (
+        {activeProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-8">
-            {category.products.map((product: any) => {
+            {activeProducts.map((product: any) => {
               const price = Number(product.price).toLocaleString();
               const priceSize = price.length > 5 ? 'text-lg' : 'text-xl';
 

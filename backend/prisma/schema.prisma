@@ -60,6 +60,7 @@ model Product {
   deliveryTime      String?
   prepaymentPercent Int      @default(0)
   specifications    Json?
+  isActive          Boolean  @default(true)
 
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
@@ -181,4 +182,7 @@ model GlobalSettings {
   cardNumber  String  @default("")
   cardHolder  String  @default("")
   dollarRate  Float   @default(1.0) // Kelajak uchun
+  isOrdersEnabled Boolean @default(true) // Sayt ishlayaptimi yoki dam olishdami?
+  telegramLink    String  @default("https://t.me/ImportMobile")
+  restModeMessage String  @default("Hozircha buyurtmalar qabul qilinmaydi. Iltimos, yangiliklarni kanalimizda kuzatib boring, tez orada ko'rishguncha!")
 }

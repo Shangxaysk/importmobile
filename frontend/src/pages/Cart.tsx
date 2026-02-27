@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, Check, ChevronLeft } from 'lucide-react';
+import { Trash2, ShoppingBag, Plus, Minus, ArrowRight, Check, ChevronLeft, Lock } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useLanguage } from '../context/LanguageContext';
-import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
+import { getImageUrl } from '../utils/image';
+import axios from 'axios';
 
 // --- FONT STILI ---
 const fontStyle = `
@@ -13,17 +14,43 @@ const fontStyle = `
 
 export default function Cart() {
   const { cart, updateQuantity, removeFromCart } = useCart();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
 
   // Tanlangan mahsulotlar ID lari
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  
+  // TIZIM HOLATI (REST MODE) UCHUN STATE'LAR
+  const [globalSettings, setGlobalSettings] = useState({ isOrdersEnabled: true, restModeMessage: '' });
+  const [showRestModal, setShowRestModal] = useState(false);
 
   useEffect(() => {
     if (cart.length > 0 && selectedIds.length === 0) {
         setSelectedIds(cart.map(item => item.id));
     }
   }, [cart]);
+
+  // TIZIM HOLATINI BAZADAN OLIB KELISH
+  useEffect(() => {
+    axios.get(import.meta.env.VITE_API_URL + '/admin-settings')
+      .then((res) => {
+        if (res.data) {
+          let messageToDisplay = '';
+          try {
+            const parsedMsg = JSON.parse(res.data.restModeMessage);
+            messageToDisplay = language === 'ru' ? parsedMsg.ru : parsedMsg.uz; 
+          } catch(e) {
+            messageToDisplay = res.data.restModeMessage; 
+          }
+
+          setGlobalSettings({
+            isOrdersEnabled: res.data.isOrdersEnabled,
+            restModeMessage: messageToDisplay || ''
+          });
+        }
+      })
+      .catch((err) => console.error("Tizim sozlamasini yuklashda xato:", err));
+  }, [language]); // Til o'zgarganda xabarni qayta yuklaydi
 
   const toggleSelection = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -39,6 +66,15 @@ export default function Cart() {
 
   const goToProduct = (id: string) => {
     navigate(`/product/${id}`);
+  };
+
+  // CHECKOUT GA O'TISHDAN OLDIN TEKSHIRAMIZ
+  const handleProceedToCheckout = () => {
+    if (!globalSettings.isOrdersEnabled) {
+      setShowRestModal(true); // Sayt o'chiq bo'lsa modal chiqaramiz
+    } else {
+      navigate('/checkout'); // Ishlayotgan bo'lsa o'tkazib yuboramiz
+    }
   };
 
   return (
@@ -105,7 +141,6 @@ export default function Cart() {
                             onClick={() => goToProduct(item.id)}
                             className="cursor-pointer w-24 h-24 sm:w-28 sm:h-28 bg-gray-50 dark:bg-gray-900 rounded-2xl flex-shrink-0 p-3 flex items-center justify-center relative overflow-hidden border border-gray-100 dark:border-gray-800"
                           >
-                             {/* TO'G'IRLANDI */}
                              <img 
                                src={getImageUrl(item.image)} 
                                alt={item.name} 
@@ -179,7 +214,7 @@ export default function Cart() {
                     </div>
 
                     <button 
-                        onClick={() => navigate('/checkout')}
+                        onClick={handleProceedToCheckout}
                         disabled={selectedIds.length === 0}
                         className={`w-full h-[54px] rounded-full font-bold text-base tracking-wide shadow-xl flex items-center justify-center gap-2 transition-all 
                             ${selectedIds.length === 0 
@@ -196,6 +231,33 @@ export default function Cart() {
             </div>
           </div>
       )}
+
+      {/* --- TIZIM DAM OLISH REJIMI MODALI --- */}
+      {showRestModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in pb-safe">
+          <div className="bg-white dark:bg-gray-900 rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 dark:border-gray-800 relative">
+            <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock size={36} />
+            </div>
+            <h2 className="text-2xl font-black mb-4 dark:text-white uppercase tracking-tight">
+              {t('service_paused')}
+            </h2>
+            
+            <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed text-sm font-medium">
+              {globalSettings.restModeMessage || t('default_rest_message')}
+            </p>
+            
+            <a href="https://t.me/importmobile" target="_blank" rel="noopener noreferrer" className="block w-full py-4 bg-emerald-600 hover:bg-emerald-700 transition-colors text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] mb-3 shadow-lg shadow-emerald-600/20">
+              {t('telegram_channel')}
+            </a>
+            
+            <button onClick={() => setShowRestModal(false)} className="text-gray-400 text-[10px] font-black uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition">
+              {t('close_btn')}
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

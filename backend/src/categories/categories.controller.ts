@@ -17,13 +17,15 @@ export class CategoriesController {
     private readonly uploadService: UploadService
   ) {}
 
-  // 1. KATEGORIYA QO'SHISH (ImgBB bilan)
+  // 1. KATEGORIYA QO'SHISH
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
   async create(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
-    let imagePath = null;
+    // XATONI TO'G'IRLASH: Turini aniq ko'rsatamiz
+    let imagePath: string | null = null; 
+    
     if (file) {
       const res = await this.uploadService.uploadFile(file);
       imagePath = res.secure_url;
@@ -41,27 +43,25 @@ export class CategoriesController {
     }, imagePath);
   }
 
-  // 👇 MANA SHU QISMLAR TUSHIB QOLGAN EDI 👇
-
-  // 2. BARCHA KATEGORIYALARNI OLISH
   @Get()
   findAll() {
     return this.categoriesService.findAll();
   }
 
-  // 3. BITTA KATEGORIYANI OLISH
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(+id);
   }
 
-  // 4. KATEGORIYANI TAHRIRLASH (ImgBB bilan)
+  // 4. KATEGORIYANI TAHRIRLASH
   @Patch(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('image', { storage: memoryStorage() }))
   async update(@Param('id') id: string, @UploadedFile() file: Express.Multer.File, @Body() body: any) {
-    let imagePath = undefined;
+    // XATONI TO'G'IRLASH: Turini aniq ko'rsatamiz
+    let imagePath: string | undefined = undefined;
+
     if (file) {
       const res = await this.uploadService.uploadFile(file);
       imagePath = res.secure_url;
@@ -79,7 +79,6 @@ export class CategoriesController {
     }, imagePath);
   }
 
-  // 5. KATEGORIYANI O'CHIRISH
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('ADMIN')

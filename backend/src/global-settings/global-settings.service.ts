@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class GlobalSettingsService {
   constructor(private prisma: PrismaService) {}
 
+  // Barcha sozlamalarni (Karta + Tizim holati) bittada qaytaradi
   async getSettings() {
     let settings = await this.prisma.globalSettings.findUnique({ where: { id: 1 } });
     if (!settings) {
@@ -27,6 +28,24 @@ export class GlobalSettingsService {
         cardNumber: dto.cardNumber,
         cardHolder: dto.cardHolder,
       },
+    });
+  }
+
+  // Tizim holatini o'zgartirish
+  async toggleOrders(data: { isOrdersEnabled: boolean; restModeMessage: string }) {
+    return this.prisma.globalSettings.upsert({
+      where: { id: 1 },
+      update: { 
+        isOrdersEnabled: data.isOrdersEnabled,
+        restModeMessage: data.restModeMessage
+      },
+      create: {
+        id: 1,
+        isOrdersEnabled: data.isOrdersEnabled,
+        restModeMessage: data.restModeMessage,
+        cardNumber: '',
+        cardHolder: ''
+      }
     });
   }
 }

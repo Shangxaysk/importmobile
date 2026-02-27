@@ -6,20 +6,22 @@ import { useLanguage } from '../context/LanguageContext';
 import axios from 'axios';
 import { 
   Upload, AlertTriangle, X, Clock, ShieldCheck, 
-  ChevronLeft, MapPin, Phone, CreditCard, Receipt, Send, Layers, Smartphone, CheckCircle2
+  ChevronLeft, MapPin, Phone, CreditCard, Receipt, Send, Layers, Smartphone, CheckCircle2, Lock
 } from 'lucide-react';
-import { getImageUrl } from '../utils/image'; // TO'G'IRLANDI
+import { getImageUrl } from '../utils/image';
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage(); 
   
   const [enrichedCart, setEnrichedCart] = useState<any[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [adminCard, setAdminCard] = useState({ number: '', holder: '' });
   
+  const [globalSettings, setGlobalSettings] = useState({ isOrdersEnabled: true, restModeMessage: '' });
+  const [showRestModal, setShowRestModal] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
   const [form, setForm] = useState({
@@ -42,13 +44,11 @@ export default function Checkout() {
     let clean = input.replace(/\D/g, '');
     if (clean.startsWith('998')) clean = clean.substring(3);
     if (clean.length > 9) clean = clean.substring(0, 9);
-
     let formatted = '+998 ';
     if (clean.length > 0) formatted += clean.substring(0, 2);
     if (clean.length > 2) formatted += ' ' + clean.substring(2, 5);
     if (clean.length > 5) formatted += ' ' + clean.substring(5, 7);
     if (clean.length > 7) formatted += ' ' + clean.substring(7, 9);
-    
     return { clean: '998' + clean, formatted };
   };
 
@@ -62,9 +62,10 @@ export default function Checkout() {
 
     const fetchData = async () => {
       try {
-        const [prodRes, settingsRes] = await Promise.all([
+        // DIQQAT: API manzillari to'g'rilandi. Bitta murojaatda ham karta, ham tizim holati keladi
+        const [prodRes, globalRes] = await Promise.all([
           axios.get(import.meta.env.VITE_API_URL + '/products'),
-          axios.get(import.meta.env.VITE_API_URL + '/admin-settings')
+          axios.get(import.meta.env.VITE_API_URL + '/admin-settings') 
         ]);
 
         const mappedCart = cart.map(cartItem => {
@@ -74,10 +75,25 @@ export default function Checkout() {
         });
         setEnrichedCart(mappedCart);
 
-        if(settingsRes.data) {
+        if(globalRes.data) {
+          // Kartani set qilamiz
           setAdminCard({ 
-            number: settingsRes.data.cardNumber, 
-            holder: settingsRes.data.cardHolder 
+            number: globalRes.data.cardNumber, 
+            holder: globalRes.data.cardHolder 
+          });
+
+          // Tizim holatini set qilamiz
+          let messageToDisplay = '';
+          try {
+            const parsedMsg = JSON.parse(globalRes.data.restModeMessage);
+            messageToDisplay = language === 'ru' ? parsedMsg.ru : parsedMsg.uz; 
+          } catch(e) {
+            messageToDisplay = globalRes.data.restModeMessage; 
+          }
+
+          setGlobalSettings({
+            isOrdersEnabled: globalRes.data.isOrdersEnabled,
+            restModeMessage: messageToDisplay || ''
           });
         }
       } catch (err) {
@@ -89,7 +105,7 @@ export default function Checkout() {
     };
 
     fetchData();
-  }, [cart, navigate]);
+  }, [cart, navigate, language]);
 
   useEffect(() => {
     let interval: any;
@@ -117,12 +133,10 @@ export default function Checkout() {
     const file = e.target.files[0];
     if (!file) return;
     const formData = new FormData();
-    formData.append('image', file); // 'file' emas 'image' qildik
+    formData.append('image', file); 
     setUploading(true);
     try {
-      // Backenddagi ImgBB mantiqli yangi upload endpointi
       const res = await axios.post(import.meta.env.VITE_API_URL + '/upload', formData);
-      // Backend secure_url qaytaryapti deb hisoblaymiz
       setForm({ ...form, paymentReceipt: res.data.secure_url || res.data.url });
     } catch (err) {
       alert(t('error'));
@@ -133,6 +147,10 @@ export default function Checkout() {
 
   const handlePreSubmit = (e: any) => {
     e.preventDefault();
+    if (!globalSettings.isOrdersEnabled) {
+      setShowRestModal(true);
+      return;
+    }
     if (!form.address || !form.passportSeria || !form.passportNumber || !form.paymentReceipt) {
       alert(t('fill_required_fields'));
       return;
@@ -204,8 +222,7 @@ export default function Checkout() {
       </div>
 
       <form onSubmit={handlePreSubmit} className="max-w-3xl mx-auto p-4 space-y-6 mt-2">
-        
-        {/* 1. ALOQA VA MANZIL */}
+        {/* ALOQA VA MANZIL */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="font-black text-lg mb-6 flex items-center gap-3 text-gray-900 dark:text-white">
             <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 p-2 rounded-xl"><Phone size={20}/></span> {t('contact_and_address')}
@@ -232,7 +249,7 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* 2. BOJXONA MA'LUMOTLARI */}
+        {/* BOJXONA MA'LUMOTLARI */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800 relative overflow-hidden">
           <div className="absolute top-0 right-0 p-6 opacity-5 dark:opacity-10 pointer-events-none"><ShieldCheck size={100}/></div>
           <h2 className="font-black text-lg mb-2 flex items-center gap-3 text-gray-900 dark:text-white relative z-10">
@@ -284,7 +301,7 @@ export default function Checkout() {
           </div>
         </div>
 
-        {/* 3. TO'LOV CHEKI VA SUMMA */}
+        {/* TO'LOV CHEKI VA SUMMA */}
         <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-800">
           <h2 className="font-black text-lg mb-6 flex items-center gap-3 text-gray-900 dark:text-white">
             <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 p-2 rounded-xl"><Receipt size={20}/></span> {t('payment_receipt')}
@@ -304,7 +321,6 @@ export default function Checkout() {
           <div className="border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 transition">
              {form.paymentReceipt ? (
                <div className="relative w-full max-w-[200px] mx-auto">
-                 {/* TO'G'IRLANDI */}
                  <img src={getImageUrl(form.paymentReceipt)} className="rounded-xl shadow-md w-full" alt="Receipt" />
                  <button type="button" onClick={() => setForm({...form, paymentReceipt: ''})} className="absolute -top-3 -right-3 bg-red-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition"><X size={16}/></button>
                </div>
@@ -338,7 +354,7 @@ export default function Checkout() {
          </div>
       </div>
 
-      {/* WARNING MODAL */}
+      {/* WARNING MODAL (ESKI) */}
       {showWarning && (
         <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in pb-safe">
            <div className="bg-white dark:bg-gray-900 w-full max-w-md md:rounded-[32px] rounded-t-[32px] p-6 shadow-2xl relative">
@@ -361,6 +377,33 @@ export default function Checkout() {
            </div>
         </div>
       )}
+
+      {/* --- YANGI: TIZIM DAM OLISH REJIMI MODALI --- */}
+      {showRestModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in pb-safe">
+          <div className="bg-white dark:bg-gray-900 rounded-[40px] p-8 max-w-sm w-full text-center shadow-2xl border border-gray-100 dark:border-gray-800 relative">
+            <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Lock size={36} />
+            </div>
+            <h2 className="text-2xl font-black mb-4 dark:text-white uppercase tracking-tight">
+              {t('service_paused')}
+            </h2>
+            
+            <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed text-sm font-medium">
+              {globalSettings.restModeMessage || t('default_rest_message')}
+            </p>
+            
+            <a href="https://t.me/importmobile_uz" target="_blank" rel="noopener noreferrer" className="block w-full py-4 bg-emerald-600 hover:bg-emerald-700 transition-colors text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] mb-3 shadow-lg shadow-emerald-600/20">
+              {t('telegram_channel')}
+            </a>
+            
+            <button onClick={() => setShowRestModal(false)} className="text-gray-400 text-[10px] font-black uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition">
+              {t('close_btn')}
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

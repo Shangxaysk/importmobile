@@ -1,6 +1,6 @@
 import { 
   Controller, Get, Post, Body, Patch, Param, Delete, 
-  UseGuards, UseInterceptors, UploadedFiles 
+  UseGuards, UseInterceptors, UploadedFiles, Query 
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Roles } from '../auth/roles.decorator';
@@ -25,25 +25,17 @@ export class ProductsController {
     @UploadedFiles() files: Express.Multer.File[], 
     @Body() body: any
   ) {
-    // Rasm URL'lari uchun massiv (Type-safe)
     let imageUrls: string[] = [];
     
     if (files && files.length > 0) {
-      // Barcha fayllarni ImgBB ga yuboramiz va natijalarni kutamiz
       const uploadPromises = files.map(file => this.uploadService.uploadFile(file));
       const results = await Promise.all(uploadPromises);
-      // Natijalardan secure_url'ni olib massivga yig'amiz
       imageUrls = results.map((res: any) => res.secure_url);
     }
 
-    // Specifications string bo'lib kelsa, uni obyektga aylantiramiz
     let specs = body.specifications; 
     if (typeof specs === 'string') {
-      try { 
-        specs = JSON.parse(specs); 
-      } catch (e) { 
-        specs = {}; 
-      }
+      try { specs = JSON.parse(specs); } catch (e) { specs = {}; }
     }
 
     const productData = {
@@ -78,11 +70,7 @@ export class ProductsController {
 
     let specs = body.specifications;
     if (typeof specs === 'string') {
-      try { 
-        specs = JSON.parse(specs); 
-      } catch (e) { 
-        // Xato bo'lsa hech narsa qilmaymiz
-      }
+      try { specs = JSON.parse(specs); } catch (e) {}
     }
 
     const updateData = {
@@ -97,9 +85,19 @@ export class ProductsController {
     return this.productsService.update(+id, updateData, newImageUrls);
   }
 
+  // Yangi: Mahsulotni yashirish/ko'rsatish endpointi
+  @Patch(':id/toggle-visibility')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('ADMIN')
+  toggleVisibility(@Param('id') id: string) {
+    return this.productsService.toggleVisibility(+id);
+  }
+
+  // O'zgartirildi: activeOnly query parametrini qabul qiladi
   @Get()
-  findAll() { 
-    return this.productsService.findAll(); 
+  findAll(@Query('activeOnly') activeOnly?: string) { 
+    const isActiveOnly = activeOnly === 'true'; // Agar 'true' kelsa, faqat aktivlari chiqadi
+    return this.productsService.findAll(isActiveOnly); 
   }
 
   @Get(':id')

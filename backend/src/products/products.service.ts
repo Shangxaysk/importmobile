@@ -14,7 +14,7 @@ export class ProductsService {
         originalPrice: data.originalPrice || null,
         deliveryTime: data.deliveryTime,
         prepaymentPercent: data.prepaymentPercent,
-        images: data.images, // ImgBB URL'lar massivi
+        images: data.images,
         specifications: data.specifications || {},
         category: {
           connect: { id: data.categoryId }
@@ -24,8 +24,10 @@ export class ProductsService {
     });
   }
 
-  async findAll() {
+  // activeOnly parametri qo'shildi
+  async findAll(activeOnly: boolean = false) {
     return this.prisma.product.findMany({
+      where: activeOnly ? { isActive: true } : undefined,
       include: { category: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -48,7 +50,6 @@ export class ProductsService {
       try { finalSpecs = JSON.parse(dto.specifications); } catch (e) { finalSpecs = existingProduct.specifications; }
     }
 
-    // Rasmlarni birlashtirish mantiqi
     let currentImages: string[] = [];
     if (dto.existingImages) {
       currentImages = typeof dto.existingImages === 'string' 
@@ -76,6 +77,19 @@ export class ProductsService {
         })
       },
       include: { category: true }
+    });
+  }
+
+  // Yangi metod: Mahsulotni ko'zdan o'chirish / ko'rsatish
+  async toggleVisibility(id: number) {
+    const product = await this.findOne(id); // Borligini tekshiramiz
+    
+    return this.prisma.product.update({
+      where: { id },
+      data: {
+        isActive: !product.isActive, // Holatni teskarisiga o'zgartiramiz
+      },
+      include: { category: true },
     });
   }
 
