@@ -7,7 +7,6 @@ export class UploadService {
   private s3Client: S3Client;
 
   constructor(private readonly configService: ConfigService) {
-    // Agar bu yerda qizil bo'lsa, ConfigService importini tekshiring
     this.s3Client = new S3Client({
       region: this.configService.get<string>('AWS_REGION') || 'us-east-1',
       credentials: {
@@ -21,6 +20,7 @@ export class UploadService {
 
   async uploadFile(file: any): Promise<{ secure_url: string }> {
     const bucket = this.configService.get<string>('AWS_S3_BUCKET_NAME') || '';
+    // Fayl nomidagi bo'sh joylarni pastki chiziqqa almashtiramiz
     const fileKey = `uploads/${Date.now()}-${file.originalname?.replace(/\s/g, '_') || 'file.jpg'}`;
 
     try {
@@ -33,8 +33,25 @@ export class UploadService {
 
       await this.s3Client.send(command);
       
-      const endpoint = (this.configService.get<string>('AWS_ENDPOINT') || '').replace(/\/$/, '');
-      const url = `${endpoint}/${bucket}/${fileKey}`;
+      // =====================================
+      // MUHIM: URL YASASH LOGIKASI
+      // =====================================
+      const endpoint = this.configService.get<string>('AWS_ENDPOINT');
+      const region = this.configService.get<string>('AWS_REGION') || 'us-east-1';
+      let url = '';
+
+      if (endpoint) {
+        // Agar Yandex Cloud yoki boshqa custom S3 bo'lsa
+        url = `${endpoint.replace(/\/$/, '')}/${bucket}/${fileKey}`;
+      } else {
+        // Agar toza Amazon AWS S3 bo'lsa
+        url = `https://${bucket}.s3.${region}.amazonaws.com/${fileKey}`;
+      }
+
+      // Agar url http/https bilan boshlanmagan bo'lsa (masalan shunchaki /importmobile... bo'lsa), to'g'rilaymiz
+      if (!url.startsWith('http')) {
+        url = `https://${url.replace(/^\//, '')}`;
+      }
 
       return { secure_url: url };
     } catch (error) {

@@ -9,25 +9,25 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UploadService } from './upload.service';
-import { AuthGuard } from '@nestjs/passport'; // Agar faqat adminlar rasm yuklashini xohlasangiz
-import { RolesGuard } from '../auth/roles.guard'; // Roles guard bo'lsa
-import { Roles } from '../auth/roles.decorator';
+// Agar keyinchalik JWT Guard kerak bo'lsa, izohdan chiqarasiz:
+// import { AuthGuard } from '@nestjs/passport'; 
+// import { RolesGuard } from '../auth/roles.guard'; 
+// import { Roles } from '../auth/roles.decorator';
 
 @Controller('upload')
 export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post()
-  // Agar bu faqat adminlar uchun bo'lsa, quyidagi guardlarni yoqing:
   // @UseGuards(AuthGuard('jwt'), RolesGuard)
   // @Roles('ADMIN')
   @UseInterceptors(FileInterceptor('file', {
-    storage: memoryStorage(), // Faylni vaqtincha xotirada (RAM) ushlab turamiz
+    storage: memoryStorage(), // S3 ga jo'natish uchun faylni RAM da ushlab turamiz
     limits: {
-      fileSize: 5 * 1024 * 1024, // Maksimal 5MB gacha rasm ruxsat berish
+      fileSize: 5 * 1024 * 1024, // 5MB limit
     },
     fileFilter: (req, file, callback) => {
-      // Faqat rasmlarni qabul qilish mantiqi
+      // Faqat rasm formatlariga ruxsat
       if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
         return callback(new BadRequestException('Faqat rasm fayllari ruxsat etiladi!'), false);
       }
@@ -39,10 +39,10 @@ export class UploadController {
       throw new BadRequestException("Fayl tanlanmagan!");
     }
 
-    // Faylni S3 xizmatiga (UploadService orqali) yuklaymiz
+    // Faylni xotiradan to'g'ri UploadService ga uzatamiz
     const result = await this.uploadService.uploadFile(file);
 
-    // Frontendga S3 dan qaytgan HTTPS URL ni qaytaramiz
+    // Tayyor, toza va xavfsiz URL ni frontendga qaytaramiz
     return { 
       url: result.secure_url 
     };
